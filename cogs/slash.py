@@ -1,7 +1,7 @@
 import discord
 from discord import app_commands
 from discord.ext import commands
-from typing import Optional
+from typing import Optional, Literal
 from random import choice
 import asyncio
 import os
@@ -165,6 +165,38 @@ class SlashCommands(commands.Cog):
         author = interaction.user
 
         await interaction.response.send_message(f"""{author.mention} said to itself : `"Fuck it"` and then **quit**...""")
+
+    @app_commands.command(name="impots")
+    @app_commands.guilds(POWI_GUILD)
+    @app_commands.describe(
+        case = "Identifiant de la case d'imposition.",
+        montant = "Montant de la déclaration."
+    )
+    async def impots(self, interaction : discord.Interaction,
+    case: Literal['3AF', 'YEB4', 'PVF9', 'Z47F', '2BPY', 'B8L', 'L33T', 'B4N', 'K1CK', 'P0W1', 'T4M4', 'N1CK'],
+    montant : int) -> None:
+        """Paye tes impots. ~~Konar~~"""
+        author = interaction.user
+
+        await interaction.response.send_message(f"{author.mention} a bien déclaré ses impots.\nCase: `{case}` | " + f"**{montant:,}**€".replace(",", " "))
+
+    @app_commands.command(name="rsa")
+    @app_commands.guilds(POWI_GUILD)
+    @app_commands.describe(
+        premier_mois = "Montant de vos revenues de votre premier mois.",
+        deuxieme_mois = "Montant de vos revenues de votre deuxième mois.",
+        troisieme_mois = "Montant de vos revenues de votre troisième mois."
+    )
+    async def rsa(self, interaction : discord.Interaction, premier_mois : int, deuxieme_mois : int, troisieme_mois : int):
+        """Fait ton /rsa trimestriel !"""
+        if premier_mois >= 1329 or deuxieme_mois >= 1329 or troisieme_mois >= 1329:
+            await interaction.response.send_message(f"Déso bro, mais tu gagnes trop pour recevoir le RSA.")
+        else:
+            avg = int(sum([premier_mois, deuxieme_mois, troisieme_mois]) / 3)
+            to_pay = 1329 - avg
+            if to_pay > 598: to_pay = 598
+            await interaction.response.send_message(f"Tiens, ton RSA de **{to_pay}**€, sale pauvre, vas travailler plus.")
+
 
 async def setup(bot: commands.Bot) -> None:
     await bot.add_cog(SlashCommands(bot))
