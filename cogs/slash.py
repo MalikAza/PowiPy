@@ -164,7 +164,7 @@ class SlashCommands(commands.Cog):
         """To forfeit."""
         author = interaction.user
 
-        await interaction.response.send_message(f"""{author.mention} said to itself : `"Fuck it"` and then **quit**...""")
+        await interaction.response.send_message(f"""{author.mention} *has disconnected...*""")
 
     @app_commands.command(name="impots")
     @app_commands.guilds(POWI_GUILD)
@@ -196,7 +196,6 @@ class SlashCommands(commands.Cog):
             to_pay = 1329 - avg
             if to_pay > 598: to_pay = 598
             await interaction.response.send_message(f"Tiens, ton RSA de **{to_pay}**€, sale pauvre, vas travailler plus.")
-
 
 async def setup(bot: commands.Bot) -> None:
     await bot.add_cog(SlashCommands(bot))
