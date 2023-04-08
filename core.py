@@ -53,14 +53,7 @@ class Core(commands.Cog):
     @commands.command(hidden=True)
     @commands.is_owner()
     async def cogs(self, ctx):
-        # loaded
-        loaded = [str(cog).replace("cogs.", "") for cog in self.bot.extensions]
-        # unloaded
-        unloaded = []
-        for filename in os.listdir('./cogs'):
-            if filename.endswith('.py'):
-                if filename[:-3] not in loaded:
-                    unloaded.append(filename[:-3])
+        loaded, unloaded = await self.bot.get_cogs()
         if not unloaded:
             unloaded = ["None"]
         # embeds
