@@ -1,17 +1,16 @@
 import discord
 from discord.ext import commands
-from discord import app_commands
 import os
 from colorama import init, Fore
 init()
 from dotenv import load_dotenv
 load_dotenv()
-import logging
 
 clear = lambda : os.system('clear') # cls for win
 token = os.getenv('TOKEN')
 invite_link = os.getenv('INVITE_LINK')
 POWI_GUILD = discord.Object(id=os.getenv('POWI_GUILD_ID'))
+POWI_COLOR = 0xfee695
 
 # basics
 intents = discord.Intents.all()
@@ -22,9 +21,25 @@ class Client(commands.Bot):
         super().__init__(command_prefix=command_prefix, intents=intents, help_command=help_command)
 
     async def _get_loaded_cogs(self):
+        """
+        This function returns a list of loaded cogs in a Python Discord bot.
+        :return: The function `_get_loaded_cogs` is returning a list of strings, where each string
+        represents the name of a loaded cog in the bot. The function is using a list comprehension to
+        iterate over the `bot.extensions` attribute, which contains all the loaded extensions (cogs) in the
+        bot, and then it is using the `replace` method to remove the "cogs." prefix from each
+        """
         return [str(cog).replace("cogs.", "") for cog in bot.extensions]
     
     def _get_unloaded_cogs(self, loaded):
+        """
+        This function returns a list of unloaded Python files in the './cogs' directory based on a list of
+        loaded files.
+        
+        :param loaded: A list of strings representing the names of the currently loaded cogs
+        :return: a list of unloaded cog filenames (without the .py extension) from the ./cogs directory,
+        based on the list of already loaded cog filenames passed as an argument. If there are no unloaded
+        cogs, the function returns None.
+        """
         unloaded = []
         for filename in os.listdir('./cogs'):
             if filename.endswith('.py'):
@@ -35,6 +50,12 @@ class Client(commands.Bot):
         return unloaded
 
     async def get_cogs(self):
+        """
+        This function returns a tuple of loaded and unloaded cogs.
+        :return: The function `get_cogs` returns a tuple containing two lists: `loaded` and `unloaded`. The
+        `loaded` list contains the names of the currently loaded cogs, while the `unloaded` list contains
+        the names of the cogs that are not currently loaded.
+        """
         loaded = await self._get_loaded_cogs()
         unloaded = self._get_unloaded_cogs(loaded)
 
@@ -69,7 +90,6 @@ class Client(commands.Bot):
         print(msg)
 
     async def on_command_error(self, ctx, error):
-        print('wow')
         if isinstance(error, commands.MissingRequiredArgument):
             await ctx.send_help(ctx.command.name)
         elif isinstance(error, commands.CommandNotFound):
@@ -77,32 +97,66 @@ class Client(commands.Bot):
         else:
             await ctx.send(f"```py\n{error}\n```")
 
-class CustomHelpCommand(commands.HelpCommand):
+class CustomHelpCommand(commands.MinimalHelpCommand):
 
     def __init__(self):
         super().__init__()
+### Utilies method ###
+    async def send(self, **kwargs):
+        await self.get_destination().send(**kwargs)
 
-    async def send_bot_help(self, mapping): # [prefix]help
-        print('bot help')
-        print(mapping)
-        return await super().send_bot_help(mapping)
+    async def base_embed(self, ctx):
+        embed = discord.Embed(color=discord.Color(value=POWI_COLOR))
+        embed.set_author(name=f"{ctx.me.name} Help Menu", icon_url=ctx.me.avatar.url)
+        embed.set_footer(text=f"Type {ctx.prefix}help <command> for more info on a command. " + 
+                                f"You can also type {ctx.prefix}help <category> for more info on a category.")
+        
+        return embed
     
-    async def send_cog_help(self, cog): # [prefix]help Class_name_from_cog
-        print('cog help')
-        print(cog)
-        return await super().send_cog_help(cog)
-    
-    async def send_group_help(self, group): # [prefix]help group_command
-        print('group help')
-        print(group)
-        return await super().send_group_help(group)
-    
-    async def send_command_help(self, command): # [prefix]help command
-        print('cmd help')
-        print(command)
-        return await super().send_command_help(command)
+    async def get_cmd_list(self, commands):
+        pass
+######
+    async def send_error_message(self, error): return
 
-bot = Client(command_prefix=";", intents=intents, help_command=CustomHelpCommand())
+    # [prefix]help
+    async def send_bot_help(self, mapping):
+        ctx = self.context
+        embed = await self.base_embed(ctx)
+
+        for cog, commands in mapping.items():
+            filtered_cmds = await self.filter_commands(commands, sort=True)
+            cmd_signatures = [self.get_command_signature(cmd) for cmd in filtered_cmds]
+
+            if cmd_signatures:
+                cog_name = getattr(cog, "qualified_name", "No Category")
+                embed.add_field(name=f"__{cog_name}:__",
+                                value="\n".join([f"**{cmd}** {filtered_cmds[i].help}"
+                                                 if 'help' not in cmd else f"**{ctx.prefix}help** {filtered_cmds[i].help}"
+                                                 for i, cmd in enumerate(cmd_signatures)]),
+                                inline=False)
+
+        await self.send(embed=embed)
+    
+    # [prefix]help command
+    async def send_command_help(self, command):
+        ctx = self.context
+        embed = await self.base_embed(ctx)
+        embed.description = (f"```Syntax: {self.get_command_signature(command)}" + 
+                            ((f"\nAlias: " + ', '.join(command.aliases)) if command.aliases else '') +
+                            '```')
+        embed.add_field(name=command.help, value="ㅤ")
+
+        await self.send(embed=embed)
+
+    # async def send_cog_help(self, cog): # [prefix]help Class_name_from_cog
+    #     return await super().send_cog_help(cog)
+    
+    # async def send_group_help(self, group): # [prefix]help group_command
+    #     return await super().send_group_help(group)
+
+bot = Client(command_prefix=";",
+             intents=intents,
+             help_command=CustomHelpCommand())
 
 # running
 bot.run(token)
