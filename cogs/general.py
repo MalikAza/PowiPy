@@ -3,7 +3,8 @@ from discord.ext import commands
 import os
 import sys
 import datetime
-import time
+from .utils.user import get_status, get_roles_string
+from .utils.dtimestamp import DateTo
 
 from dotenv import load_dotenv
 load_dotenv()
@@ -41,6 +42,7 @@ class General(commands.Cog):
         await ctx.send(embed=data)
 
     @commands.command()
+    @commands.guild_only()
     async def serverinfo(self, ctx):
         """Show server informations."""
         server = ctx.guild
@@ -132,6 +134,45 @@ class General(commands.Cog):
         embed.set_footer(text=joined_on)
 
         await ctx.send(embed=embed)
+
+    @commands.command()
+    @commands.guild_only()
+    async def userinfo(self, ctx, *, user: discord.Member = None):
+        """Show informations about a member."""
+        author = ctx.author
+        server = ctx.guild
+        if not user:
+            user = author
+
+        # Discord join & Server join
+        joined_at = user.joined_at
+        since_created = (ctx.message.created_at - user.created_at).days
+        since_joined = (ctx.message.created_at - joined_at).days
+        user_joined = DateTo(joined_at.strftime("%d/%m/%Y %H:%M")).longdate
+        user_created = DateTo(user.created_at.strftime("%d/%m/%Y %H:%M")).longdate
+        created_on = ("{}\n(il y a {} jours)").format(user_created, since_created)
+        joined_on = ("{}\n(il y a {} jours)").format(user_joined, since_joined)
+        # Voice
+        voice_state = user.voice
+        # Statut
+        status_string, status_emoji = get_status(user)
+        # roles
+        role_string = get_roles_string(user)
+
+        data = discord.Embed(description=status_string or '', color=user.color)
+        data.set_author(name=status_emoji +
+                            f" {' ~ '.join((str(user), user.display_name)) if user.display_name else str(user)}")
+        data.set_thumbnail(url=user.avatar.url)
+        if voice_state and voice_state.channel:
+            data.add_field(name="Channel vocal",
+                           value="{0.mention} ID: {0.id}".format(voice_state.channel),
+                           inline=False)
+        data.add_field(name="A rejoint Discord le", value=created_on)
+        data.add_field(name="A rejoint ce serveur le", value=joined_on)
+        if role_string: data.add_field(name="Rôle(s)", value=role_string, inline=False)
+        data.set_footer(text=f"Member #{sorted(server.members, key=lambda m: m.joined_at).index(user)+1}")
+
+        await ctx.send(embed=data)
 
 async def setup(bot):
     await bot.add_cog(General(bot))
