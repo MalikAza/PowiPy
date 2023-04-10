@@ -60,7 +60,7 @@ class Core(commands.Cog):
         title = f"{len(loaded)} Cogs Loaded :"
         description = "{}".format(", ".join(sorted(loaded)))
         load_cog = discord.Embed(
-            title=title, description=description, color=0x73b504)
+            title=title, description=description, color=0x1f8b4c)
 
         if unloaded[0] == "None":
             title = "0 Cog Unloaded :"
@@ -69,7 +69,7 @@ class Core(commands.Cog):
 
         description = "{}".format(", ".join(sorted(unloaded)))
 
-        unload_cog = discord.Embed(title=title, description=description, color=0xFF5733)
+        unload_cog = discord.Embed(title=title, description=description, color=0x992e22)
         await ctx.send(embed=load_cog)
         await ctx.send(embed=unload_cog)
 
