@@ -185,4 +185,5 @@ bot = Client(command_prefix=";",
              help_command=CustomHelpCommand())
 
 # running
-bot.run(token)
+bot.run(token,
+        log_handler=None) # disabling logging
