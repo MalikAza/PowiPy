@@ -174,5 +174,22 @@ class General(commands.Cog):
 
         await ctx.send(embed=data)
 
+    @commands.command()
+    async def avatar(self, ctx, user : discord.Member = None):
+        if user == None:
+            user = ctx.author
+
+        if user.avatar.is_animated():
+            url = str(user.avatar.replace(size=1024, format="gif"))
+        else:
+            url = str(user.avatar.replace(size=1024, static_format="png"))
+
+
+        data = discord.Embed(title="**Avatar**", color=user.color)
+        data.set_image(url=url)
+        data.set_author(name=user, icon_url=url)
+
+        await ctx.send(embed=data)
+
 async def setup(bot):
     await bot.add_cog(General(bot))
