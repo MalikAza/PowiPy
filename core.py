@@ -262,7 +262,7 @@ class Core(commands.Cog):
             await ctx.bot.change_presence(status=status, activity=game)
             await ctx.send("Status changed to {}.".format(status))
 
-    @_set.command(name="stream", help="Set the bot 'Streming...'")
+    @_set.command(name="stream", help="Set the bot 'Streaming...'")
     @commands.is_owner()
     async def _stream(self, ctx, streamer=None, *, stream_title=None):
         status = ctx.bot.guilds[0].me.status if len(ctx.bot.guilds) > 0 else None

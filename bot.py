@@ -1,6 +1,7 @@
 import discord
 from discord.ext import commands
 import os
+import re
 from colorama import init, Fore
 init()
 from dotenv import load_dotenv
@@ -101,11 +102,12 @@ class CustomHelpCommand(commands.MinimalHelpCommand):
 
     def __init__(self):
         super().__init__()
+
 ### Utilies method ###
     async def send(self, **kwargs):
         await self.get_destination().send(**kwargs)
 
-    async def base_embed(self, ctx):
+    def base_embed(self, ctx):
         embed = discord.Embed(color=discord.Color(value=POWI_COLOR))
         embed.set_author(name=f"{ctx.me.name} Help Menu", icon_url=ctx.me.avatar.url)
         embed.set_footer(text=f"Type {ctx.prefix}help <command> for more info on a command. " + 
@@ -113,46 +115,70 @@ class CustomHelpCommand(commands.MinimalHelpCommand):
         
         return embed
     
+    def help_embed_field(self, ctx, embed, title, commands, args = True):
+        embed.add_field(name=f"__{title}:__",
+                        value="\n".join(["**" + re.sub(r'\[.*?\]', '', cmd_sign) + f"** {cmd_help}"
+                                        if 'help' not in cmd_sign else f"**{ctx.prefix}help** {cmd_help}"
+                                        for cmd_sign, cmd_help in commands]),
+                        inline=False)
+        
+    def help_embed_description(self, embed, command):
+        embed.description = (f"```Syntax: {self.get_command_signature(command)}" + 
+                            ((f"\nAlias: " + ', '.join(command.aliases)) if command.aliases else '') +
+                            '```')
+        embed.add_field(name=command.help, value="ㅤ")
+    
     async def get_cmd_list(self, commands):
-        pass
+        if filtered_cmds := await self.filter_commands(commands, sort=True):
+            cmds = []
+            for cmd in filtered_cmds:
+                cmds.append((self.get_command_signature(cmd), cmd.help))
+
+            return cmds
+        return False
 ######
+
     async def send_error_message(self, error): return
 
     # [prefix]help
     async def send_bot_help(self, mapping):
         ctx = self.context
-        embed = await self.base_embed(ctx)
+        embed = self.base_embed(ctx)
 
         for cog, commands in mapping.items():
-            filtered_cmds = await self.filter_commands(commands, sort=True)
-            cmd_signatures = [self.get_command_signature(cmd) for cmd in filtered_cmds]
-
-            if cmd_signatures:
+            if cmd_list := await self.get_cmd_list(commands):
                 cog_name = getattr(cog, "qualified_name", "No Category")
-                embed.add_field(name=f"__{cog_name}:__",
-                                value="\n".join([f"**{cmd}** {filtered_cmds[i].help}"
-                                                 if 'help' not in cmd else f"**{ctx.prefix}help** {filtered_cmds[i].help}"
-                                                 for i, cmd in enumerate(cmd_signatures)]),
-                                inline=False)
+                self.help_embed_field(ctx, embed, cog_name, cmd_list)
 
         await self.send(embed=embed)
     
     # [prefix]help command
     async def send_command_help(self, command):
         ctx = self.context
-        embed = await self.base_embed(ctx)
-        embed.description = (f"```Syntax: {self.get_command_signature(command)}" + 
-                            ((f"\nAlias: " + ', '.join(command.aliases)) if command.aliases else '') +
-                            '```')
-        embed.add_field(name=command.help, value="ㅤ")
+        embed = self.base_embed(ctx)
+        self.help_embed_description(embed, command)
 
         await self.send(embed=embed)
 
-    # async def send_cog_help(self, cog): # [prefix]help Class_name_from_cog
-    #     return await super().send_cog_help(cog)
+    # [prefix]help Class_name_from_cog
+    async def send_cog_help(self, cog):
+        ctx = self.context
+        embed = self.base_embed(ctx)
+        cog_name = getattr(cog, "qualified_name", "No Category")
+
+        if cog.description: embed.add_field(name=cog.description, value="ㅤ", inline=False)
+        self.help_embed_field(ctx, embed, cog_name, await self.get_cmd_list(cog.get_commands()))
+
+        await self.send(embed=embed)
     
-    # async def send_group_help(self, group): # [prefix]help group_command
-    #     return await super().send_group_help(group)
+    # [prefix]help group_command
+    async def send_group_help(self, group):
+        ctx = self.context
+        embed = self.base_embed(ctx)
+        self.help_embed_description(embed, group)
+        self.help_embed_field(ctx, embed, "Subcommands", await self.get_cmd_list(group.commands), False)
+
+        await self.send(embed=embed)
 
 bot = Client(command_prefix=";",
              intents=intents,
