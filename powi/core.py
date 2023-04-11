@@ -47,7 +47,7 @@ class Core(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    @commands.command()
+    @commands.command(help='List the loaded & unloaded cogs.')
     @commands.is_owner()
     async def cogs(self, ctx):
         loaded, unloaded = await self.bot.get_cogs()
@@ -70,7 +70,7 @@ class Core(commands.Cog):
         await ctx.send(embed=load_cog)
         await ctx.send(embed=unload_cog)
 
-    @commands.command()
+    @commands.command(help='Load a specific unloaded cog.')
     @commands.is_owner()
     async def load(self, ctx, extension):
         try:
@@ -80,7 +80,7 @@ class Core(commands.Cog):
             error = str(e).replace("'", "`").replace("cogs.", "")
             await ctx.send(error)
 
-    @commands.command()
+    @commands.command(help='Unload a specific loaded cog.')
     @commands.is_owner()
     async def unload(self, ctx, extension):
         try:
@@ -91,7 +91,7 @@ class Core(commands.Cog):
             print(error)
             await ctx.send(error)
 
-    @commands.command()
+    @commands.command(help='Reload a specific cog.')
     @commands.is_owner()
     async def reload(self, ctx, extension):
         try:
@@ -101,13 +101,13 @@ class Core(commands.Cog):
             error = str(e).replace("'", "`").replace("cogs.", "")
             await ctx.send(error)
 
-    @commands.command()
+    @commands.command(help='Stops the bot.')
     @commands.is_owner()
     async def shutdown(self, ctx):
         await ctx.send("Shutting down...")
         await ctx.bot.close()
 
-    @commands.command()
+    @commands.command(help='Synchronize the app commands with the Discord API.')
     @commands.is_owner()
     async def slashsync(self, ctx):
         msg = await ctx.send("Les commandes d'application sont en cours de synchronisation..." + 
@@ -115,7 +115,7 @@ class Core(commands.Cog):
         await ctx.bot.tree.sync(guild=discord.Object(id=POWI_GUILD_ID))
         await msg.edit(content="Les commandes d'application ont bien été synchronisées. ✅")
 
-    @commands.group()
+    @commands.group(help='List all the servers where the bot is in.')
     @commands.is_owner()
     async def servers(self, ctx):
         if ctx.invoked_subcommand is None:
@@ -124,7 +124,7 @@ class Core(commands.Cog):
 
             await ctx.send(msg)
 
-    @servers.command()
+    @servers.command(help='Making the bot leave a specific server.')
     @commands.is_owner()
     async def leave(self, ctx, server: discord.Guild):
 
