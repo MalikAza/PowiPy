@@ -29,7 +29,7 @@ class Client(commands.Bot):
         iterate over the `bot.extensions` attribute, which contains all the loaded extensions (cogs) in the
         bot, and then it is using the `replace` method to remove the "cogs." prefix from each
         """
-        return [str(cog).replace("cogs.", "") for cog in bot.extensions]
+        return [str(cog).replace("powi.", "").replace("cogs.", "") for cog in bot.extensions]
     
     def _get_unloaded_cogs(self, loaded):
         """
@@ -42,7 +42,7 @@ class Client(commands.Bot):
         cogs, the function returns None.
         """
         unloaded = []
-        for filename in os.listdir('./cogs'):
+        for filename in os.listdir('./powi/cogs'):
             if filename.endswith('.py'):
                 if filename[:-3] not in loaded:
                     unloaded.append(filename[:-3])
@@ -67,12 +67,12 @@ class Client(commands.Bot):
         print("Bot logged as " + Fore.YELLOW + f"{bot.user}" + Fore.RESET + ".")
         print('---------')
         # loading core
-        await bot.load_extension('core')
+        await bot.load_extension('powi.core')
         # loading cogs
         try:
-            for filename in os.listdir('./cogs'):
+            for filename in os.listdir('./powi/cogs'):
                 if filename.endswith('.py'):
-                    await bot.load_extension(f'cogs.{filename[:-3]}')
+                    await bot.load_extension(f'powi.cogs.{filename[:-3]}')
         except:
             pass
         # extensions un/loaded (console)
