@@ -3,12 +3,11 @@ from discord.ext import commands
 import os
 import sys
 import datetime
-from .utils.user import get_status, get_roles_string
-from .utils.dtimestamp import DateTo
+from src.utils.user import get_status, get_roles_string
+from src.utils.dtimestamp import DateTo
+from src.utils.chat_formatting import humanize_timedelta
 
 POWI_GUILD_ID = os.getenv('POWI_GUILD_ID')
-
-from .utils.chat_formatting import humanize_timedelta
 
 class General(commands.Cog):
     def __init__(self, bot):

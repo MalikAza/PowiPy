@@ -4,7 +4,7 @@ from typing import List, TypedDict
 import discord
 from discord.ext import commands
 
-from .utils import init_logging
+from src.utils.logger import init_logging
 from ._help_command import CustomHelpCommand
 
 class LoadedAndUnloadedCogs(TypedDict):

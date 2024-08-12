@@ -1,6 +1,6 @@
 import discord
 
-def handle_custom(user):
+def handle_custom(user: discord.Member):
     a = [c for c in user.activities if c.type == discord.ActivityType.custom]
     if not a:
         return None, discord.ActivityType.custom
@@ -16,7 +16,7 @@ def handle_custom(user):
         c_status = ("{name}").format(name=a.name)
     return c_status, discord.ActivityType.custom
 
-def handle_playing(user):
+def handle_playing(user: discord.Member):
     p_acts = [c for c in user.activities if c.type == discord.ActivityType.playing]
     if not p_acts:
         return None, discord.ActivityType.playing
@@ -24,7 +24,7 @@ def handle_playing(user):
     act = ("Joue à : {name}").format(name=p_act.name)
     return act, discord.ActivityType.playing
 
-def handle_streaming(user):
+def handle_streaming(user: discord.Member):
     s_acts = [c for c in user.activities if c.type == discord.ActivityType.streaming]
     if not s_acts:
         return None, discord.ActivityType.streaming
@@ -40,7 +40,7 @@ def handle_streaming(user):
         act = ("Stream : {name}").format(name=s_act.name)
     return act, discord.ActivityType.streaming
 
-def handle_listening(user):
+def handle_listening(user: discord.Member):
     l_acts = [c for c in user.activities if c.type == discord.ActivityType.listening]
     if not l_acts:
         return None, discord.ActivityType.listening
@@ -56,7 +56,7 @@ def handle_listening(user):
         act = ("Ecoute : {title}").format(title=l_act.name)
     return act, discord.ActivityType.listening
 
-def handle_watching(user):
+def handle_watching(user: discord.Member):
     w_acts = [c for c in user.activities if c.type == discord.ActivityType.watching]
     if not w_acts:
         return None, discord.ActivityType.watching
@@ -64,7 +64,7 @@ def handle_watching(user):
     act = ("Regarde : {name}").format(name=w_act.name)
     return act, discord.ActivityType.watching
 
-def get_status_string(user):
+def get_status_string(user: discord.Member):
         string = ""
         for a in [
             handle_custom(user),
@@ -79,7 +79,7 @@ def get_status_string(user):
             string += f"{status_string}\n"
         return string
 
-def get_status_emoji(user):
+def get_status_emoji(user: discord.Member):
     if any(a.type is discord.ActivityType.streaming for a in user.activities):
         statusemoji = "\N{LARGE PURPLE CIRCLE}"
     elif user.status.name == "online":
@@ -93,10 +93,10 @@ def get_status_emoji(user):
 
     return statusemoji
 
-def get_status(user):
+def get_status(user: discord.Member):
     return get_status_string(user), get_status_emoji(user)
 
-def get_roles_string(user):
+def get_roles_string(user: discord.Member):
     roles = user.roles[-1:0:-1]
     if roles:
         role_str = ", ".join([x.mention for x in roles])
