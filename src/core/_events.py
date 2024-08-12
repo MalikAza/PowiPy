@@ -5,8 +5,10 @@ import os
 from discord.ext import commands
 from .client import Client
 
-from colorama import init, Fore
-init()
+from rich import print
+from rich.console import Console
+
+console = Console()
 
 def init_events(bot: Client):
 
@@ -17,7 +19,7 @@ def init_events(bot: Client):
         except Exception as error:
             tb_error = ''.join(traceback.format_exception(type(error), error, error.__traceback__))
             print(
-                f"{Fore.RED}Bot failed to be ready:{Fore.RESET}\n\n" +
+                "[bold red]Bot failed to be ready:[/bold red]\n\n" +
                 tb_error
             )
             sys.exit(1)
@@ -31,24 +33,24 @@ def init_events(bot: Client):
     async def _on_ready():
         os.system('clear') # cls for win
 
-        logged_msg = f"Bot logged as {Fore.YELLOW}{bot.user}{Fore.RESET}"
-        separator = '-' * (len(logged_msg) - (len(Fore.YELLOW) + len(Fore.RESET)))
+        logged_msg = f"Bot logged as [bold yellow]{bot.user}[/bold yellow]"
+        separator = '-' * (len(logged_msg) - (len('[bold yellow]') + len('[/bold yellow]')))
 
         print(logged_msg, separator, sep='\n')
 
         await load_cogs()
         cogs = bot.get_cogs()
 
-        loaded_msg = f"Extensions {Fore.GREEN}loaded{Fore.RESET}:\n"
+        loaded_msg = "Extensions [bold green]loaded[/bold green]:\n"
         loaded_msg += ", ".join(sorted(cogs['loaded']))
 
-        unloaded_msg = f"Extensions {Fore.RED}not loaded{Fore.RESET}:\n"
+        unloaded_msg = "Extensions [bold red]not loaded[/bold red]:\n"
         unloaded_msg += ", ".join(sorted(cogs['unloaded']))
 
         print(loaded_msg, unloaded_msg, sep='\n\n')
 
         invite_link = os.getenv('INVITE_LINK')
-        print(separator, f"Invite link:\n{Fore.CYAN}{invite_link}{Fore.RESET}", sep='\n')
+        print(separator, f"Invite link:\n[cyan]{invite_link}[/cyan]", sep='\n', end='\n\n')
 
     @bot.event
     async def on_command_error(ctx: commands.Context, error: Exception):
