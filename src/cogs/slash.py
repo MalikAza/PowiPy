@@ -4,8 +4,7 @@ from discord.ext import commands
 from typing import Optional
 from random import choice
 import os
-from dotenv import load_dotenv
-load_dotenv()
+
 POWI_GUILD_ID = os.getenv('POWI_GUILD_ID')
 
 POWI_GUILD = discord.Object(id=POWI_GUILD_ID)

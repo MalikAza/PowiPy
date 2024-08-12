@@ -3,8 +3,8 @@ from discord.ext import commands
 import os
 import aiohttp
 
-from dotenv import load_dotenv
-load_dotenv()
+from src.core.client import Client
+
 POWI_GUILD_ID = os.getenv('POWI_GUILD_ID')
 
 class ConfirmLeaveServer(discord.ui.View):
@@ -44,27 +44,22 @@ class ConfirmLeaveServer(discord.ui.View):
             await interaction.response.send_message(f"You're not {self.author}. Go away!", ephemeral=True)
 
 class Core(commands.Cog):
-    def __init__(self, bot):
+    def __init__(self, bot: Client):
         self.bot = bot
 
     @commands.command(help='List the loaded & unloaded cogs.')
     @commands.is_owner()
     async def cogs(self, ctx):
-        loaded, unloaded = await self.bot.get_cogs()
-        if not unloaded:
-            unloaded = ["None"]
+        cogs = self.bot.get_cogs()
         # embeds
-        title = f"{len(loaded)} Cogs Loaded :"
-        description = "{}".format(", ".join(sorted(loaded)))
+        title = f"{len(cogs['loaded'])} Cogs Loaded :"
+        description = "{}".format(", ".join(sorted(cogs['loaded'])))
         load_cog = discord.Embed(
             title=title, description=description, color=0x1f8b4c)
 
-        if unloaded[0] == "None":
-            title = "0 Cog Unloaded :"
-        else:
-            title = f"{len(unloaded) } Cogs Unloaded :"
+        title = f"{len(cogs['unloaded']) } Cogs Unloaded :"
 
-        description = "{}".format(", ".join(sorted(unloaded)))
+        description = "{}".format(", ".join(sorted(cogs['unloaded'])))
 
         unload_cog = discord.Embed(title=title, description=description, color=0x992e22)
         await ctx.send(embed=load_cog)
@@ -74,7 +69,7 @@ class Core(commands.Cog):
     @commands.is_owner()
     async def load(self, ctx, extension: str):
         try:
-            await self.bot.load_extension(f'powi.cogs.{extension}')
+            await self.bot.load_extension(f'src.cogs.{extension}')
             await ctx.send(f"`{extension}` loaded.")
         except Exception as e:
             error = str(e).replace("'", "`").replace("cogs.", "")
@@ -84,7 +79,7 @@ class Core(commands.Cog):
     @commands.is_owner()
     async def unload(self, ctx, extension: str):
         try:
-            await self.bot.unload_extension(f'powi.cogs.{extension}')
+            await self.bot.unload_extension(f'src.cogs.{extension}')
             await ctx.send(f"`{extension}` unloaded.")
         except Exception as e:
             error = str(e).replace("'", "`").replace("cogs.", "")
@@ -95,7 +90,7 @@ class Core(commands.Cog):
     @commands.is_owner()
     async def reload(self, ctx, extension):
         try:
-            await self.bot.reload_extension(f'powi.cogs.{extension}')
+            await self.bot.reload_extension(f'src.cogs.{extension}')
             await ctx.send(f"`{extension}` reloaded.")
         except Exception as e:
             error = str(e).replace("'", "`").replace("cogs.", "")

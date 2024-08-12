@@ -6,8 +6,6 @@ import datetime
 from .utils.user import get_status, get_roles_string
 from .utils.dtimestamp import DateTo
 
-from dotenv import load_dotenv
-load_dotenv()
 POWI_GUILD_ID = os.getenv('POWI_GUILD_ID')
 
 from .utils.chat_formatting import humanize_timedelta
@@ -190,6 +188,10 @@ class General(commands.Cog):
         data.set_author(name=user, icon_url=url)
 
         await ctx.send(embed=data)
+
+    @commands.command()
+    async def error(self, ctx):
+        await ctx.send(1 + 'abcdef' + [1, 2, 3])
 
 async def setup(bot):
     await bot.add_cog(General(bot))
