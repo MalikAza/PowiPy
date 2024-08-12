@@ -1,7 +1,7 @@
 import discord
 from discord.ext import commands
 import os
-import aiohttp
+import requests
 
 from src.core.client import Client
 
@@ -144,14 +144,14 @@ class Core(commands.Cog):
             if url.startswith("<") and url.endswith(">"):
                 url = url[1:-1]
 
-            async with aiohttp.ClientSession() as session:
-                try:
-                    async with session.get(url) as r:
-                        data = await r.read()
-                except aiohttp.InvalidURL:
-                    return await ctx.send("That URL is invalid.")
-                except aiohttp.ClientError:
-                    return await ctx.send("Somehting went wrong while trying to get the image.")
+            try:
+                response = requests.get(url)
+                response.raise_for_status()
+                data = response.content
+            except requests.exceptions.InvalidURL:
+                return await ctx.send("That URL is invalid.")
+            except requests.exceptions.RequestException:
+                return await ctx.send("Something went wrong while trying to get the image.")
         else:
             await ctx.send_help()
             return
