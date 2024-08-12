@@ -1,3 +1,4 @@
+import traceback
 import discord
 from discord.ext import commands
 import os
@@ -90,13 +91,14 @@ class Client(commands.Bot):
         msg += "Invite link:\n" + Fore.CYAN + invite_link + Fore.RESET
         print(msg)
 
-    async def on_command_error(self, ctx, error):
+    async def on_command_error(self, ctx: commands.Context, error: Exception):
         if isinstance(error, commands.MissingRequiredArgument):
             await ctx.send_help(ctx.command.name)
         elif isinstance(error, commands.CommandNotFound):
             pass
         else:
-            await ctx.send(f"```py\n{error}\n```")
+            print(''.join(traceback.format_exception(type(error), error, error.__traceback__)))
+            await ctx.send(f"```Erreur dans la commande '{ctx.command.name}'.\nVérifiez votre console ou les logs pour plus de détails.```")
 
 class CustomHelpCommand(commands.MinimalHelpCommand):
 
