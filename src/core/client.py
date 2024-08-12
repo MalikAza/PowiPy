@@ -4,6 +4,7 @@ from typing import List, TypedDict
 import discord
 from discord.ext import commands
 
+from .utils import init_logging
 from ._help_command import CustomHelpCommand
 
 class LoadedAndUnloadedCogs(TypedDict):
@@ -17,6 +18,7 @@ class Client(commands.Bot):
         intents.message_content = True
         super().__init__(command_prefix=command_prefix, intents=intents, help_command=CustomHelpCommand())
 
+        init_logging('powipy', log_level=logging.INFO, file_log_level=logging.WARNING)
         self._init_events()
     
     def _init_events(self):
@@ -55,3 +57,7 @@ class Client(commands.Bot):
             'loaded': loaded,
             'unloaded': unloaded
         }
+    
+    def run(self, *args, **kwargs):
+        logging.getLogger('powipy').info('Connecting to Discord...')
+        super().run(*args, **kwargs)

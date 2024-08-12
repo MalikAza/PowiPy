@@ -57,5 +57,5 @@ def init_events(bot: Client):
         elif isinstance(error, commands.CommandNotFound):
             pass
         else:
-            print(''.join(traceback.format_exception(type(error), error, error.__traceback__)))
+            logging.getLogger('powipy').error(''.join(traceback.format_exception(type(error), error, error.__traceback__)))
             await ctx.send(f"```Error in command '{ctx.command.name}'.\nPlease check console.```")
