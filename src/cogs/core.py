@@ -278,5 +278,13 @@ class Core(commands.Cog):
             await ctx.bot.change_presence(activity=None, status=status)
         await ctx.send("Done.")
 
+    @commands.command(aliases=['tb'], help='Display the last traceback.')
+    @commands.is_owner()
+    async def traceback(self, ctx: commands.Context):
+        if self.bot._last_error:
+            await ctx.send(f"```py\n{self.bot._last_error}\n```")
+        else:
+            await ctx.send("No exception has occurred yet.")
+
 async def setup(bot):
     await bot.add_cog(Core(bot))

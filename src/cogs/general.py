@@ -189,9 +189,5 @@ class General(commands.Cog):
 
         await ctx.send(embed=data)
 
-    @commands.command()
-    async def error(self, ctx):
-        await ctx.send(1 + 'abcdef' + [1, 2, 3])
-
 async def setup(bot):
     await bot.add_cog(General(bot))

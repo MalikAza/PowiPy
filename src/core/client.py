@@ -12,6 +12,7 @@ class LoadedAndUnloadedCogs(TypedDict):
     unloaded: List[str]
 
 class Client(commands.Bot):
+    _last_error: str
 
     def __init__(self, command_prefix: str):
         intents = discord.Intents.all()
