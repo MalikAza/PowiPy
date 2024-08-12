@@ -5,7 +5,7 @@ from typing import Optional
 def _get_formatter() -> logging.Formatter:
     return logging.Formatter(
         "[{asctime}] [{levelname}] {name}: {message}",
-        datefmt="%Y-%m-%d %H:%M:%S",
+        datefmt="%Y/%m/%d-%H:%M:%S",
         style="{"
     )
 
