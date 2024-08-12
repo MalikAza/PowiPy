@@ -72,9 +72,9 @@ class Core(commands.Cog):
 
     @commands.command(help='Load a specific unloaded cog.')
     @commands.is_owner()
-    async def load(self, ctx, extension):
+    async def load(self, ctx, extension: str):
         try:
-            await self.bot.load_extension(f'cogs.{extension}')
+            await self.bot.load_extension(f'powi.cogs.{extension}')
             await ctx.send(f"`{extension}` loaded.")
         except Exception as e:
             error = str(e).replace("'", "`").replace("cogs.", "")
@@ -82,9 +82,9 @@ class Core(commands.Cog):
 
     @commands.command(help='Unload a specific loaded cog.')
     @commands.is_owner()
-    async def unload(self, ctx, extension):
+    async def unload(self, ctx, extension: str):
         try:
-            await self.bot.unload_extension(f'cogs.{extension}')
+            await self.bot.unload_extension(f'powi.cogs.{extension}')
             await ctx.send(f"`{extension}` unloaded.")
         except Exception as e:
             error = str(e).replace("'", "`").replace("cogs.", "")
@@ -95,7 +95,7 @@ class Core(commands.Cog):
     @commands.is_owner()
     async def reload(self, ctx, extension):
         try:
-            await self.bot.reload_extension(f'cogs.{extension}')
+            await self.bot.reload_extension(f'powi.cogs.{extension}')
             await ctx.send(f"`{extension}` reloaded.")
         except Exception as e:
             error = str(e).replace("'", "`").replace("cogs.", "")
