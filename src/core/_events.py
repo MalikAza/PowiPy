@@ -2,6 +2,7 @@ import logging
 import sys
 import traceback
 import os
+import discord
 from discord.ext import commands
 from .client import Client
 
@@ -65,3 +66,63 @@ def init_events(bot: Client):
             logging.getLogger('powipy').error(tb_error)
 
             await ctx.send(f"```Error in command '{ctx.command.name}'.\nPlease check console.```")
+
+class OnAppCommandErrorHandler:
+    bot: Client | None = None
+
+    @classmethod
+    def set_bot(cls, bot: Client):
+        cls.bot = bot
+
+    @staticmethod
+    async def on_app_command_error(
+        interaction: discord.Interaction,
+        error: discord.app_commands.AppCommandError
+    ) -> None:
+        if isinstance(error, discord.app_commands.CommandOnCooldown):
+            await interaction.response.send_message(
+                f"This command is on cooldown! Try again in {error.retry_after:.2f} seconds.",
+                ephemeral=True
+            )
+            return
+            
+        elif isinstance(error, discord.app_commands.MissingPermissions):
+            await interaction.response.send_message(
+                f"You don't have the required permissions to use this command! "
+                f"Required permissions: {', '.join(error.missing_permissions)}",
+                ephemeral=True
+            )
+            return
+            
+        elif isinstance(error, discord.app_commands.MissingRole):
+            await interaction.response.send_message(
+                f"You're missing the required role to use this command!",
+                ephemeral=True
+            )
+            return
+            
+        elif isinstance(error, discord.app_commands.BotMissingPermissions):
+            await interaction.response.send_message(
+                f"I don't have the required permissions to execute this command! "
+                f"Required permissions: {', '.join(error.missing_permissions)}",
+                ephemeral=True
+            )
+            return
+            
+        elif isinstance(error, discord.app_commands.CommandNotFound):
+            await interaction.response.send_message(
+                "This command doesn't exist!",
+                ephemeral=True
+            )
+            return
+            
+        else:
+            tb_error = ''.join(traceback.format_exception(type(error), error, error.__traceback__))
+
+            OnAppCommandErrorHandler.bot._last_error = tb_error
+            logging.getLogger('powipy').error(tb_error)
+            
+            await interaction.response.send_message(
+                "An unexpected error occurred!",
+                ephemeral=True
+            )

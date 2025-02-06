@@ -21,6 +21,14 @@ class Client(commands.Bot):
 
         init_logging('powipy', log_level=logging.INFO, file_log_level=logging.WARNING)
         self._init_events()
+
+    async def setup_hook(self):
+        await super().setup_hook()
+
+        from ._events import OnAppCommandErrorHandler
+        OnAppCommandErrorHandler.set_bot(self)
+
+        self.tree.error(OnAppCommandErrorHandler.on_app_command_error)
     
     def _init_events(self):
         from ._events import init_events
