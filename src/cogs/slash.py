@@ -1,53 +1,57 @@
 import discord
 from discord import app_commands
 from discord.ext import commands
-from typing import Optional
+from typing import List, Optional, Union
 from random import choice
 import os
+from discord.ui import Button
 
-POWI_GUILD_ID = os.getenv('POWI_GUILD_ID')
+from src.core.client import Client
 
-POWI_GUILD = discord.Object(id=POWI_GUILD_ID)
-rps_emojis = ['Rock', 'Paper', 'Scissors']
-grey_button = discord.ButtonStyle.grey
-green_button = discord.ButtonStyle.green
-red_button = discord.ButtonStyle.red
-blue_button = discord.ButtonStyle.blurple
+POWI_GUILD = discord.Object(id=os.getenv('GUILD_ID'))
+RPS_EMOJIS = ['Rock', 'Paper', 'Scissors']
+GREY_BTN = discord.ButtonStyle.grey
+GREEN_BTN = discord.ButtonStyle.green
+RED_BTN = discord.ButtonStyle.red
+BLUE_BTN = discord.ButtonStyle.blurple
 
 class RockPaperScissors(discord.ui.View):
-    def __init__(self, author, bot_user):
+    base_interaction: discord.Interaction
+    children: List[Button]
+
+    def __init__(self, author: Union[discord.User, discord.Member], bot_user: discord.ClientUser):
         super().__init__()
         self.author = author
         self.bot_user = bot_user
 
     async def button_result(self, button_label):
-        chosen = choice(rps_emojis)
+        chosen = choice(RPS_EMOJIS)
 
         if button_label == chosen:
             winner = "Tie! No one win."
-            colors = [grey_button]*3
+            colors = [GREY_BTN]*3
         else:
             if button_label == 'Rock':
                 if chosen == 'Paper':
                     winner = self.bot_user.mention
-                    colors = [red_button, blue_button, grey_button]
+                    colors = [RED_BTN, BLUE_BTN, GREY_BTN]
                 else:
                     winner = self.author.mention
-                    colors = [green_button, grey_button, blue_button]
+                    colors = [GREEN_BTN, GREY_BTN, BLUE_BTN]
             elif button_label == 'Paper':
                 if chosen == 'Rock':
                     winner = self.author.mention
-                    colors = [blue_button, green_button, grey_button]
+                    colors = [BLUE_BTN, GREEN_BTN, GREY_BTN]
                 else:
                     winner = self.bot_user.mention
-                    colors = [grey_button, red_button, blue_button]
+                    colors = [GREY_BTN, RED_BTN, BLUE_BTN]
             elif button_label == 'Scissors':
                 if chosen == 'Rock':
                     winner = self.bot_user.mention
-                    colors = [blue_button, grey_button, red_button]
+                    colors = [BLUE_BTN, GREY_BTN, RED_BTN]
                 else:
                     winner = self.author.mention
-                    colors = [grey_button, blue_button, green_button]
+                    colors = [GREY_BTN, BLUE_BTN, GREEN_BTN]
 
         for i in range(0,3):
             self.children[i].disabled = True
@@ -55,8 +59,8 @@ class RockPaperScissors(discord.ui.View):
 
         data = discord.Embed(title="Rock, Paper, Scissors", description=f"**{self.author.display_name}**'s game.",
         color=(
-            discord.Colour.green() if green_button in colors
-            else discord.Colour.red() if red_button in colors
+            discord.Colour.green() if GREEN_BTN in colors
+            else discord.Colour.red() if RED_BTN in colors
             else discord.Colour.og_blurple()))
         data.add_field(name="Winner", value=winner)
 
@@ -67,8 +71,8 @@ class RockPaperScissors(discord.ui.View):
             item.disabled = True
         await self.base_interaction.edit_original_response(view=self)
 
-    @discord.ui.button(label='Rock', style=grey_button, emoji='🪨')
-    async def rock(self, interaction: discord.Interaction, button: discord.ui.button):
+    @discord.ui.button(label='Rock', style=GREY_BTN, emoji='🪨')
+    async def rock(self, interaction: discord.Interaction, button: Button):
         if interaction.user.id == self.author.id:
             await self.button_result(button.label)
             await interaction.response.defer()
@@ -78,8 +82,8 @@ class RockPaperScissors(discord.ui.View):
                 f"It's not your game D: ! It's {self.author.mention}'s one.",
                 ephemeral=True)
 
-    @discord.ui.button(label='Paper', style=grey_button, emoji='📄')
-    async def paper(self, interaction: discord.Interaction, button: discord.ui.button):
+    @discord.ui.button(label='Paper', style=GREY_BTN, emoji='📄')
+    async def paper(self, interaction: discord.Interaction, button: Button):
         if interaction.user.id == self.author.id:
             await self.button_result(button.label)
             await interaction.response.defer()
@@ -89,8 +93,8 @@ class RockPaperScissors(discord.ui.View):
                 f"It's not your game D: ! It's {self.author.mention}'s one.",
                 ephemeral=True)
 
-    @discord.ui.button(label='Scissors', style=grey_button, emoji='✂️')
-    async def scissors(self, interaction: discord.Interaction, button: discord.ui.button):
+    @discord.ui.button(label='Scissors', style=GREY_BTN, emoji='✂️')
+    async def scissors(self, interaction: discord.Interaction, button: Button):
         if interaction.user.id == self.author.id:
             await self.button_result(button.label)
             await interaction.response.defer()
@@ -101,7 +105,7 @@ class RockPaperScissors(discord.ui.View):
                 ephemeral=True)
 
 class SlashCommands(commands.Cog):
-    def __init__(self, bot: commands.Bot) -> None:
+    def __init__(self, bot: Client) -> None:
         self.bot = bot
 
 ### ZUnivers related ###

@@ -67,6 +67,14 @@ class Client(commands.Bot):
             'unloaded': unloaded
         }
     
+    def get_invite_link(self) -> str:
+        client_id = os.getenv('CLIENT_ID')
+
+        return f"https://discord.com/api/oauth2/authorize?client_id={client_id}&permissions=0&scope=bot%20applications.commands"
+    
+    def get_main_guild(self) -> discord.Guild:
+        return discord.Object(id=os.getenv('GUILD_ID'))
+    
     def run(self, *args, **kwargs):
         logging.getLogger('powipy').info('Connecting to Discord...')
         super().run(*args, **kwargs)

@@ -1,4 +1,5 @@
 import re
+from typing import Any, List, Mapping, Optional, Tuple
 from discord.ext import commands
 import discord
 
@@ -12,7 +13,7 @@ class CustomHelpCommand(commands.MinimalHelpCommand):
     async def send(self, **kwargs):
         await self.get_destination().send(**kwargs)
 
-    def base_embed(self, ctx: commands.Context):
+    def base_embed(self, ctx: commands.Context) -> discord.Embed:
         embed = discord.Embed(color=discord.Color(value=self.POWI_COLOR))
         embed.set_author(name=f"{ctx.me.name} Help Menu", icon_url=ctx.me.avatar.url)
         embed.set_footer(text=f"Type {ctx.prefix}help <command> for more info on a command. " + 
@@ -20,7 +21,14 @@ class CustomHelpCommand(commands.MinimalHelpCommand):
         
         return embed
 
-    def help_embed_field(self, ctx: commands.Context, embed: discord.Embed, title, commands, args = True):
+    def help_embed_field(
+        self,
+        ctx: commands.Context,
+        embed: discord.Embed,
+        title: str,
+        commands: List[Tuple[str, str | None]],
+        args: Optional[bool] = True
+    ) -> None:
         embed.add_field(name=f"__{title}:__",
                         value="\n".join(["**" + re.sub(r'\[.*?\]', '', cmd_sign) + f"** {cmd_help}"
                                         if 'help' not in cmd_sign else f"**{ctx.prefix}help** {cmd_help}"
@@ -33,20 +41,21 @@ class CustomHelpCommand(commands.MinimalHelpCommand):
                             '```')
         embed.add_field(name=command.help, value="ㅤ")
     
-    async def get_cmd_list(self, commands):
+    async def get_cmd_list(self, commands: List[commands.Command[Any, ..., Any]]):
         if filtered_cmds := await self.filter_commands(commands, sort=True):
-            cmds = []
+            cmds: List[Tuple[str, str | None]] = []
             for cmd in filtered_cmds:
                 cmds.append((self.get_command_signature(cmd), cmd.help))
 
             return cmds
+        
         return False
 ######
 
     async def send_error_message(self, error): return
 
     # [prefix]help
-    async def send_bot_help(self, mapping):
+    async def send_bot_help(self, mapping: Mapping[Optional[commands.Cog], List[commands.Command[Any, ..., Any]]], /):
         ctx = self.context
         embed = self.base_embed(ctx)
 

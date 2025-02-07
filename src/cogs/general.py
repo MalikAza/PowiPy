@@ -3,22 +3,19 @@ from discord.ext import commands
 import os
 import sys
 import datetime
+from src.core.client import Client
 from src.utils.user import get_status, get_roles_string
 from src.utils.dtimestamp import DateTo
 from src.utils.chat_formatting import humanize_timedelta
 
-POWI_GUILD_ID = os.getenv('POWI_GUILD_ID')
-
 class General(commands.Cog):
-    def __init__(self, bot):
+    def __init__(self, bot: Client):
         self.bot = bot
 
     @commands.command(aliases=['powinfo'], help="Display Bot's informations")
-    async def info(self, ctx):
-        powi_guild = await self.bot.fetch_guild(POWI_GUILD_ID)
+    async def info(self, ctx: commands.Context):
+        powi_guild = self.bot.get_main_guild()
         owner = await powi_guild.fetch_member(os.getenv('OWNER_ID'))
-        hitsu = await powi_guild.fetch_member(os.getenv('HITSU_ID'))
-        wyrd = await powi_guild.fetch_member(os.getenv('WYRD_ID'))
         py_version = "[{}.{}.{}]({})".format(*sys.version_info[:3], "https://www.python.org/")
         dpy_version = "[{}]({})".format(discord.__version__, "https://github.com/Rapptz/discord.py")
         bot_name = self.bot.user.name
@@ -31,16 +28,18 @@ class General(commands.Cog):
         data.add_field(name="Bot's owner", value=f"{owner.name}#{owner.discriminator}")
         data.add_field(name="Python", value=py_version)
         data.add_field(name="discord.py", value=dpy_version)
-        data.add_field(name=f"About {bot_name}",
-                       value=f"{bot_name} is bot created by {owner.mention} with the help of "
-                             f"{hitsu.mention} & {wyrd.mention}.", inline=False)
+        data.add_field(
+            name=f"About {bot_name}",
+            value=f"{bot_name} is bot created by {owner.mention}.",
+            inline=False
+        )
         data.set_footer(text=footer, icon_url=self.bot.user.avatar)
 
         await ctx.send(embed=data)
 
     @commands.command()
     @commands.guild_only()
-    async def serverinfo(self, ctx):
+    async def serverinfo(self, ctx: commands.Context):
         """Show server informations."""
         server = ctx.guild
         created_at = "Créé le {date_and_time}. C'étais {relative_time} !".format(
@@ -84,7 +83,7 @@ class General(commands.Cog):
         }
 
         joined_on = "{bot_name} a rejoint ce serveur le {bot_join}. Il y a plus de {since_join} jours !".format(
-            bot_name = ctx.bot.user.name,
+            bot_name = self.bot.user.name,
             bot_join = server.me.joined_at.strftime("%d %b %Y %H:%M:%S"),
             since_join = (ctx.message.created_at - server.me.joined_at).days
         )
@@ -134,7 +133,7 @@ class General(commands.Cog):
 
     @commands.command()
     @commands.guild_only()
-    async def userinfo(self, ctx, *, user: discord.Member = None):
+    async def userinfo(self, ctx: commands.Context, *, user: discord.Member = None):
         """Show informations about a member."""
         author = ctx.author
         server = ctx.guild
@@ -172,7 +171,7 @@ class General(commands.Cog):
         await ctx.send(embed=data)
 
     @commands.command()
-    async def avatar(self, ctx, user : discord.Member = None):
+    async def avatar(self, ctx: commands.Context, user : discord.Member = None):
         if user == None:
             user = ctx.author
 

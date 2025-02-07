@@ -1,14 +1,17 @@
+from typing import List, Optional, Union
 import discord
 from discord.ext import commands
-import os
+from discord.ui import Button
 import requests
 
 from src.core.client import Client
 
-POWI_GUILD_ID = os.getenv('POWI_GUILD_ID')
-
 class ConfirmLeaveServer(discord.ui.View):
-    def __init__(self, author, server):
+    msg: discord.Message
+    children: List[Button]
+    value: Optional[bool]
+
+    def __init__(self, author: Union[discord.User, discord.Member], server: discord.Guild):
         super().__init__()
         self.value = None
         self.author = author
@@ -49,7 +52,7 @@ class Core(commands.Cog):
 
     @commands.command(help='List the loaded & unloaded cogs.')
     @commands.is_owner()
-    async def cogs(self, ctx):
+    async def cogs(self, ctx: commands.Context):
         cogs = self.bot.get_cogs()
         # embeds
         title = f"{len(cogs['loaded'])} Cogs Loaded :"
@@ -67,7 +70,7 @@ class Core(commands.Cog):
 
     @commands.command(help='Load a specific unloaded cog.')
     @commands.is_owner()
-    async def load(self, ctx, extension: str):
+    async def load(self, ctx: commands.Context, extension: str):
         try:
             await self.bot.load_extension(f'src.cogs.{extension}')
             await ctx.send(f"`{extension}` loaded.")
@@ -77,7 +80,7 @@ class Core(commands.Cog):
 
     @commands.command(help='Unload a specific loaded cog.')
     @commands.is_owner()
-    async def unload(self, ctx, extension: str):
+    async def unload(self, ctx: commands.Context, extension: str):
         try:
             await self.bot.unload_extension(f'src.cogs.{extension}')
             await ctx.send(f"`{extension}` unloaded.")
@@ -88,7 +91,7 @@ class Core(commands.Cog):
 
     @commands.command(help='Reload a specific cog.')
     @commands.is_owner()
-    async def reload(self, ctx, extension):
+    async def reload(self, ctx: commands.Context, extension: str):
         try:
             await self.bot.reload_extension(f'src.cogs.{extension}')
             await ctx.send(f"`{extension}` reloaded.")
@@ -98,21 +101,25 @@ class Core(commands.Cog):
 
     @commands.command(help='Stops the bot.')
     @commands.is_owner()
-    async def shutdown(self, ctx):
+    async def shutdown(self, ctx: commands.Context):
         await ctx.send("Shutting down...")
         await ctx.bot.close()
 
     @commands.command(help='Synchronize the app commands with the Discord API.')
     @commands.is_owner()
-    async def slashsync(self, ctx):
+    async def slashsync(self, ctx: commands.Context, guild: Optional[discord.Guild] = None):
+        if not guild:
+            guild = self.bot.get_main_guild()
+
         msg = await ctx.send("Les commandes d'application sont en cours de synchronisation..." + 
                             "\nCela peut prendre quelques temps.")
-        await ctx.bot.tree.sync(guild=discord.Object(id=POWI_GUILD_ID))
+        
+        await self.bot.tree.sync(guild=discord.Object(id=guild.id))
         await msg.edit(content="Les commandes d'application ont bien été synchronisées. ✅")
 
     @commands.group(help='List all the servers where the bot is in.')
     @commands.is_owner()
-    async def servers(self, ctx):
+    async def servers(self, ctx: commands.Context):
         if ctx.invoked_subcommand is None:
             servers = sorted(self.bot.guilds, key=lambda s: s.name.lower())
             msg = "\n".join(f"- {server.name} :`{server.id}`" for server in servers)
@@ -121,7 +128,7 @@ class Core(commands.Cog):
 
     @servers.command(help='Making the bot leave a specific server.')
     @commands.is_owner()
-    async def leave(self, ctx, server: discord.Guild):
+    async def leave(self, ctx: commands.Context, server: discord.Guild):
 
         if server in self.bot.guilds:
             view = ConfirmLeaveServer(ctx.author, server)
@@ -132,12 +139,12 @@ class Core(commands.Cog):
 
     @commands.group(name="set", help="Various settings for the bot")
     @commands.is_owner()
-    async def _set(self, ctx):
+    async def _set(self, ctx: commands.Context):
         pass
 
     @_set.command(help="Set the bot's avatar")
     @commands.is_owner()
-    async def avatar(self, ctx, url: str = None):
+    async def avatar(self, ctx: commands.Context, url: str = None):
         if len(ctx.message.attachments) > 0:
             data = await ctx.message.attachments[0].read()
         elif url != None:
@@ -158,7 +165,7 @@ class Core(commands.Cog):
 
         try:
             async with ctx.typing():
-                await ctx.bot.user.edit(avatar=data)
+                await self.bot.user.edit(avatar=data)
         except discord.HTTPException:
             await ctx.send("Failed. Remember that you can edit my avatar up to two time a hour.\n"
                             "The URL or attachment must be a valid image in either JPG or PNG format.")
@@ -169,7 +176,7 @@ class Core(commands.Cog):
 
     @_set.command(name="game", help="Set the bot 'Playing to...'")
     @commands.is_owner()
-    async def _game(self, ctx, *, game: str = None):
+    async def _game(self, ctx: commands.Context, *, game: str = None):
         if game:
             if len(game) > 128:
                 await ctx.send("The maximum length of game descriptions is 128 characters.")
@@ -177,8 +184,8 @@ class Core(commands.Cog):
             game = discord.Game(name=game)
         else:
             game = None
-        status = ctx.bot.guilds[0].me.status if len(ctx.bot.guilds) > 0 else discord.Status.online
-        await ctx.bot.change_presence(status=status, activity=game)
+        status = self.bot.guilds[0].me.status if len(self.bot.guilds) > 0 else discord.Status.online
+        await self.bot.change_presence(status=status, activity=game)
         if game:
             await ctx.send("Status set to ``Playing {game.name}``.".format(game=game))
         else:
@@ -186,8 +193,8 @@ class Core(commands.Cog):
 
     @_set.command(name="listening", help="Set the bot 'Listening to...'")
     @commands.is_owner()
-    async def _listening(self, ctx, *, listening: str = None):
-        status = ctx.bot.guilds[0].me.status if len(ctx.bot.guilds) > 0 else discord.Status.online
+    async def _listening(self, ctx: commands.Context, *, listening: str = None):
+        status = self.bot.guilds[0].me.status if len(self.bot.guilds) > 0 else discord.Status.online
         if listening:
             if len(listening) > 128:
                 await ctx.send("The maximum length of listening descriptions is 128 characters.")
@@ -203,8 +210,8 @@ class Core(commands.Cog):
 
     @_set.command(name="watching", help="Set the bot 'Watching ...'")
     @commands.is_owner()
-    async def _watching(self, ctx, *, watching: str = None):
-        status = ctx.bot.guilds[0].me.status if len(ctx.bot.guilds) > 0 else discord.Status.online
+    async def _watching(self, ctx: commands.Context, *, watching: str = None):
+        status = self.bot.guilds[0].me.status if len(self.bot.guilds) > 0 else discord.Status.online
         if watching:
             if len(watching) > 128:
                 await ctx.send("The maximum length of watching descriptions is 128 characters.")
@@ -220,8 +227,8 @@ class Core(commands.Cog):
 
     @_set.command(name="competing", help="Set the bot 'Competing to...'")
     @commands.is_owner()
-    async def _competing(self, ctx, *, competing: str = None):
-        status = ctx.bot.guilds[0].me.status if len(ctx.bot.guilds) > 0 else discord.Status.online
+    async def _competing(self, ctx: commands.Context, *, competing: str = None):
+        status = self.bot.guilds[0].me.status if len(self.bot.guilds) > 0 else discord.Status.online
         if competing:
             if len(competing) > 128:
                 await ctx.send("The maximum length of competing descriptions is 128 characters.")
@@ -237,7 +244,7 @@ class Core(commands.Cog):
 
     @_set.command(name="status", help="Set the bot's status")
     @commands.is_owner()
-    async def _status(self, ctx, *, status: str = None):
+    async def _status(self, ctx: commands.Context, *, status: str = None):
         statuses = {
             "online": discord.Status.online,
             "idle": discord.Status.idle,
@@ -245,7 +252,7 @@ class Core(commands.Cog):
             "invisible": discord.Status.invisible,
         }
 
-        game = ctx.bot.guilds[0].me.activity if len(ctx.bot.guilds) > 0 else None
+        game = self.bot.guilds[0].me.activity if len(self.bot.guilds) > 0 else None
         try:
             status = statuses[status.lower()]
         except KeyError:
@@ -256,8 +263,8 @@ class Core(commands.Cog):
 
     @_set.command(name="stream", help="Set the bot 'Streaming...'")
     @commands.is_owner()
-    async def _stream(self, ctx, streamer=None, *, stream_title=None):
-        status = ctx.bot.guilds[0].me.status if len(ctx.bot.guilds) > 0 else None
+    async def _stream(self, ctx: commands.Context, streamer=None, *, stream_title=None):
+        status = self.bot.guilds[0].me.status if len(self.bot.guilds) > 0 else None
 
         if stream_title:
             stream_title = stream_title.strip()

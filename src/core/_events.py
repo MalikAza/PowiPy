@@ -50,7 +50,7 @@ def init_events(bot: Client):
 
         print(loaded_msg, unloaded_msg, sep='\n\n')
 
-        invite_link = os.getenv('INVITE_LINK')
+        invite_link = bot.get_invite_link()
         print(separator, f"Invite link:\n[cyan]{invite_link}[/cyan]", sep='\n', end='\n\n')
 
     @bot.event
