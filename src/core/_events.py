@@ -4,6 +4,8 @@ import traceback
 import os
 import discord
 from discord.ext import commands
+
+from src.core._cog_loader import CogLoader
 from .client import Client
 
 from rich import print
@@ -25,12 +27,6 @@ def init_events(bot: Client):
             )
             sys.exit(1)
 
-    async def load_cogs():
-        cogs_dir = os.path.join(os.path.dirname(__file__), '../cogs')
-        for filename in os.listdir(cogs_dir):
-            if filename.endswith('.py'):
-                await bot.load_extension(f'src.cogs.{filename[:-3]}')
-
     async def _on_ready():
         os.system('clear') # cls for win
 
@@ -39,7 +35,7 @@ def init_events(bot: Client):
 
         print(logged_msg, separator, sep='\n')
 
-        await load_cogs()
+        await CogLoader(bot).init()
         cogs = bot.get_cogs()
 
         loaded_msg = "Extensions [bold green]loaded[/bold green]:\n"

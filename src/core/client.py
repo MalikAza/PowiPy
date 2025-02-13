@@ -4,6 +4,7 @@ from typing import List, TypedDict
 import discord
 from discord.ext import commands
 
+from src.core._cog_loader import CogLoader
 from src.utils.logger import init_logging
 from ._help_command import CustomHelpCommand
 
@@ -44,16 +45,9 @@ class Client(commands.Bot):
         """
         Retrieve a list of unloaded cog filenames (without the .py extension) from the ./cogs directory.
         """
-        unloaded = []
-        cogs_dir = os.path.join(os.path.dirname(__file__), '../cogs')
-        for filename in os.listdir(cogs_dir):
-            if filename.endswith('.py'):
-                if filename[:-3] not in loaded:
-                    unloaded.append(filename[:-3])
+        potential_cogs = CogLoader(self).get_potential_packages()
 
-        if len(unloaded) == 0: unloaded.append('')
-
-        return unloaded
+        return [cog for cog in potential_cogs if cog not in loaded]
 
     def get_cogs(self) -> LoadedAndUnloadedCogs:
         """

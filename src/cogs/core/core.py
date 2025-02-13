@@ -4,6 +4,7 @@ from discord.ext import commands
 from discord.ui import Button
 import requests
 
+from src.core._cog_loader import CogLoader
 from src.core.client import Client
 
 class ConfirmLeaveServer(discord.ui.View):
@@ -72,7 +73,7 @@ class Core(commands.Cog):
     @commands.is_owner()
     async def load(self, ctx: commands.Context, extension: str):
         try:
-            await self.bot.load_extension(f'src.cogs.{extension}')
+            await self.bot.load_extension(f'{CogLoader.base_cog_import_path}{extension}')
             await ctx.send(f"`{extension}` loaded.")
         except Exception as e:
             error = str(e).replace("'", "`").replace("cogs.", "")
@@ -82,7 +83,7 @@ class Core(commands.Cog):
     @commands.is_owner()
     async def unload(self, ctx: commands.Context, extension: str):
         try:
-            await self.bot.unload_extension(f'src.cogs.{extension}')
+            await self.bot.unload_extension(f'{CogLoader.base_cog_import_path}{extension}')
             await ctx.send(f"`{extension}` unloaded.")
         except Exception as e:
             error = str(e).replace("'", "`").replace("cogs.", "")
@@ -93,7 +94,7 @@ class Core(commands.Cog):
     @commands.is_owner()
     async def reload(self, ctx: commands.Context, extension: str):
         try:
-            await self.bot.reload_extension(f'src.cogs.{extension}')
+            await self.bot.reload_extension(f'{CogLoader.base_cog_import_path}{extension}')
             await ctx.send(f"`{extension}` reloaded.")
         except Exception as e:
             error = str(e).replace("'", "`").replace("cogs.", "")
