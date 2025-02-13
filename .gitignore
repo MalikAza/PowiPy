@@ -3,3 +3,7 @@
 .venv
 desktop.ini
 powi.png
+src/cogs/*
+!src/cogs/general/
+!src/cogs/core/
+requirements-cog.txt
