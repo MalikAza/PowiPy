@@ -35,7 +35,7 @@ class General(commands.Cog):
         )
         data.set_footer(text=footer, icon_url=self.bot.user.avatar)
 
-        await ctx.send(embed=data)
+        await ctx.reply(embed=data)
 
     @commands.command()
     @commands.guild_only()
@@ -129,7 +129,7 @@ class General(commands.Cog):
         
         embed.set_footer(text=joined_on)
 
-        await ctx.send(embed=embed)
+        await ctx.reply(embed=embed)
 
     @commands.command()
     @commands.guild_only()
@@ -168,7 +168,7 @@ class General(commands.Cog):
         if role_string: data.add_field(name="Rôle(s)", value=role_string, inline=False)
         data.set_footer(text=f"Member #{sorted(server.members, key=lambda m: m.joined_at).index(user)+1}")
 
-        await ctx.send(embed=data)
+        await ctx.reply(embed=data)
 
     @commands.command()
     async def avatar(self, ctx: commands.Context, user : discord.Member = None):
@@ -185,7 +185,7 @@ class General(commands.Cog):
         data.set_image(url=url)
         data.set_author(name=user, icon_url=url)
 
-        await ctx.send(embed=data)
+        await ctx.reply(embed=data)
 
 async def setup(bot):
     await bot.add_cog(General(bot))

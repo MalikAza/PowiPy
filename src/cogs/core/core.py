@@ -157,9 +157,9 @@ class Core(commands.Cog):
                 response.raise_for_status()
                 data = response.content
             except requests.exceptions.InvalidURL:
-                return await ctx.send("That URL is invalid.")
+                return await ctx.reply("That URL is invalid.")
             except requests.exceptions.RequestException:
-                return await ctx.send("Something went wrong while trying to get the image.")
+                return await ctx.reply("Something went wrong while trying to get the image.")
         else:
             await ctx.send_help()
             return
@@ -168,19 +168,19 @@ class Core(commands.Cog):
             async with ctx.typing():
                 await self.bot.user.edit(avatar=data)
         except discord.HTTPException:
-            await ctx.send("Failed. Remember that you can edit my avatar up to two time a hour.\n"
+            await ctx.reply("Failed. Remember that you can edit my avatar up to two time a hour.\n"
                             "The URL or attachment must be a valid image in either JPG or PNG format.")
         except discord.InvalidArgument:
-            await ctx.send("JPG / PNG format only.")
+            await ctx.reply("JPG / PNG format only.")
         else:
-            await ctx.send("Done.")
+            await ctx.reply("Done.")
 
     @_set.command(name="game", help="Set the bot 'Playing to...'")
     @commands.is_owner()
     async def _game(self, ctx: commands.Context, *, game: str = None):
         if game:
             if len(game) > 128:
-                await ctx.send("The maximum length of game descriptions is 128 characters.")
+                await ctx.reply("The maximum length of game descriptions is 128 characters.")
                 return
             game = discord.Game(name=game)
         else:
@@ -188,9 +188,9 @@ class Core(commands.Cog):
         status = self.bot.guilds[0].me.status if len(self.bot.guilds) > 0 else discord.Status.online
         await self.bot.change_presence(status=status, activity=game)
         if game:
-            await ctx.send("Status set to ``Playing {game.name}``.".format(game=game))
+            await ctx.reply("Status set to ``Playing {game.name}``.".format(game=game))
         else:
-            await ctx.send("Game cleared.")
+            await ctx.reply("Game cleared.")
 
     @_set.command(name="listening", help="Set the bot 'Listening to...'")
     @commands.is_owner()
@@ -198,16 +198,16 @@ class Core(commands.Cog):
         status = self.bot.guilds[0].me.status if len(self.bot.guilds) > 0 else discord.Status.online
         if listening:
             if len(listening) > 128:
-                await ctx.send("The maximum length of listening descriptions is 128 characters.")
+                await ctx.reply("The maximum length of listening descriptions is 128 characters.")
                 return
             activity = discord.Activity(name=listening, type=discord.ActivityType.listening)
         else:
             activity = None
         await ctx.bot.change_presence(status=status, activity=activity)
         if activity:
-            await ctx.send("Status set to ``Listening to {listening}``.".format(listening=listening))
+            await ctx.reply("Status set to ``Listening to {listening}``.".format(listening=listening))
         else:
-            await ctx.send("Listening cleared.")
+            await ctx.reply("Listening cleared.")
 
     @_set.command(name="watching", help="Set the bot 'Watching ...'")
     @commands.is_owner()
@@ -215,16 +215,16 @@ class Core(commands.Cog):
         status = self.bot.guilds[0].me.status if len(self.bot.guilds) > 0 else discord.Status.online
         if watching:
             if len(watching) > 128:
-                await ctx.send("The maximum length of watching descriptions is 128 characters.")
+                await ctx.reply("The maximum length of watching descriptions is 128 characters.")
                 return
             activity = discord.Activity(name=watching, type=discord.ActivityType.watching)
         else:
             activity = None
         await ctx.bot.change_presence(status=status, activity=activity)
         if activity:
-            await ctx.send("Status set to ``Watching {watching}``.".format(watching=watching))
+            await ctx.reply("Status set to ``Watching {watching}``.".format(watching=watching))
         else:
-            await ctx.send("Watching cleared.")
+            await ctx.reply("Watching cleared.")
 
     @_set.command(name="competing", help="Set the bot 'Competing to...'")
     @commands.is_owner()
@@ -232,16 +232,16 @@ class Core(commands.Cog):
         status = self.bot.guilds[0].me.status if len(self.bot.guilds) > 0 else discord.Status.online
         if competing:
             if len(competing) > 128:
-                await ctx.send("The maximum length of competing descriptions is 128 characters.")
+                await ctx.reply("The maximum length of competing descriptions is 128 characters.")
                 return
             activity = discord.Activity(name=competing, type=discord.ActivityType.competing)
         else:
             activity = None
         await ctx.bot.change_presence(status=status, activity=activity)
         if activity:
-            await ctx.send("Status set to ``Competing in {competing}``.".format(competing=competing))
+            await ctx.reply("Status set to ``Competing in {competing}``.".format(competing=competing))
         else:
-            await ctx.send("Competing cleared.")
+            await ctx.reply("Competing cleared.")
 
     @_set.command(name="status", help="Set the bot's status")
     @commands.is_owner()
@@ -260,7 +260,7 @@ class Core(commands.Cog):
             await ctx.send_help()
         else:
             await ctx.bot.change_presence(status=status, activity=game)
-            await ctx.send("Status changed to {}.".format(status))
+            await ctx.reply("Status changed to {}.".format(status))
 
     @_set.command(name="stream", help="Set the bot 'Streaming...'")
     @commands.is_owner()
@@ -272,10 +272,10 @@ class Core(commands.Cog):
             if "twitch.tv/" not in streamer:
                 streamer = "https://www.twitch.tv/" + streamer
             if len(streamer) > 511:
-                await ctx.send("The maximum length of the streamer url is 511 characters.")
+                await ctx.reply("The maximum length of the streamer url is 511 characters.")
                 return
             if len(stream_title) > 128:
-                await ctx.send("The maximum length of the stream title is 128 characters.")
+                await ctx.reply("The maximum length of the stream title is 128 characters.")
                 return
             activity = discord.Streaming(url=streamer, name=stream_title)
             await ctx.bot.change_presence(status=status, activity=activity)
@@ -290,9 +290,9 @@ class Core(commands.Cog):
     @commands.is_owner()
     async def traceback(self, ctx: commands.Context):
         if self.bot._last_error:
-            await ctx.send(f"```py\n{self.bot._last_error}\n```")
+            await ctx.reply(f"```py\n{self.bot._last_error}\n```")
         else:
-            await ctx.send("No exception has occurred yet.")
+            await ctx.reply("No exception has occurred yet.")
 
 async def setup(bot):
     await bot.add_cog(Core(bot))
