@@ -1,3 +1,5 @@
+import logging
+import traceback
 from typing import List, Optional, Union
 import discord
 from discord.ext import commands
@@ -75,9 +77,11 @@ class Core(commands.Cog):
         try:
             await self.bot.load_extension(f'{CogLoader.base_cog_import_path}{extension}')
             await ctx.send(f"`{extension}` loaded.")
-        except Exception as e:
-            error = str(e).replace("'", "`").replace("cogs.", "")
-            await ctx.send(error)
+        except Exception as error:
+            tb_error = ''.join(traceback.format_exception(type(error), error, error.__traceback__))
+            self.bot._last_error = tb_error
+            logging.getLogger('powipy').error(tb_error)
+            raise error
 
     @commands.command(help='Unload a specific loaded cog.')
     @commands.is_owner()
@@ -85,10 +89,11 @@ class Core(commands.Cog):
         try:
             await self.bot.unload_extension(f'{CogLoader.base_cog_import_path}{extension}')
             await ctx.send(f"`{extension}` unloaded.")
-        except Exception as e:
-            error = str(e).replace("'", "`").replace("cogs.", "")
-            print(error)
-            await ctx.send(error)
+        except Exception as error:
+            tb_error = ''.join(traceback.format_exception(type(error), error, error.__traceback__))
+            self.bot._last_error = tb_error
+            logging.getLogger('powipy').error(tb_error)
+            raise error
 
     @commands.command(help='Reload a specific cog.')
     @commands.is_owner()
@@ -96,9 +101,11 @@ class Core(commands.Cog):
         try:
             await self.bot.reload_extension(f'{CogLoader.base_cog_import_path}{extension}')
             await ctx.send(f"`{extension}` reloaded.")
-        except Exception as e:
-            error = str(e).replace("'", "`").replace("cogs.", "")
-            await ctx.send(error)
+        except Exception as error:
+            tb_error = ''.join(traceback.format_exception(type(error), error, error.__traceback__))
+            self.bot._last_error = tb_error
+            logging.getLogger('powipy').error(tb_error)
+            raise error
 
     @commands.command(help='Stops the bot.')
     @commands.is_owner()
