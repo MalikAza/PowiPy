@@ -31,7 +31,7 @@ class JSONStorage(BaseStorage):
     def __init__(self, storage_name: str):
         self.logger = logging.getLogger(f'{storage_name}Storage')
         self.storage_name = storage_name
-        self._data = Dict[str, Any] = {}
+        self._data: Dict[str, Any] = {}
         self._lock = asyncio.Lock()
 
         # Get project root directory
