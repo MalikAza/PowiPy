@@ -27,3 +27,12 @@ def humanize_timedelta(*, timedelta: Optional[datetime.timedelta] = None, second
             string.append(f"{period_value} {unit}")
 
     return ", ".join(string)
+
+def human_reading_count(text: str) -> float:
+    counting = 0.5
+    how_many_words = text.count(" ")
+
+    if how_many_words != 0:
+        counting += 1*(how_many_words/5)
+        
+    return counting
