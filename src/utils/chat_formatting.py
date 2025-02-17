@@ -36,3 +36,10 @@ def human_reading_count(text: str) -> float:
         counting += 1*(how_many_words/5)
         
     return counting
+
+def alternating_case(word: str) -> str:
+    """Convert a word to alternating case, preserving original spaces."""
+    return ''.join(
+        char.upper() if i % 2 else char.lower()
+        for i, char in enumerate(word)
+    )
