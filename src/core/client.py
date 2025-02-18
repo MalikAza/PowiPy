@@ -1,6 +1,6 @@
 import logging
 import os
-from typing import List, TypedDict
+from typing import List, Optional, Sequence, TypedDict, Union
 import discord
 from discord.ext import commands
 
@@ -72,3 +72,25 @@ class Client(commands.Bot):
     async def login(self, token: str) -> None:
         logging.getLogger('powipy').info('Connecting to Discord...')
         return await super().login(token)
+    
+    async def send_to_owner(
+        self,
+        content: Optional[str] = ...,
+        *,
+        tts: bool = ...,
+        embed: discord.Embed = ...,
+        file: discord.File = ...,
+        stickers: Sequence[Union[discord.GuildSticker, discord.StickerItem]] = ...,
+        delete_after: float = ...,
+        nonce: Union[str, int] = ...,
+        allowed_mentions: discord.AllowedMentions = ...,
+        reference: Union[discord.Message, discord.MessageReference, discord.PartialMessage] = ...,
+        mention_author: bool = ...,
+        view: discord.ui.View = ...,
+        suppress_embeds: bool = ...,
+        silent: bool = ...,
+    ) -> discord.Message:
+        args = {key: value for key, value in locals().items() if key != 'self'}
+        
+        owner = self.get_user(os.getenv('OWNER_ID'))
+        return await owner.send(**args)
