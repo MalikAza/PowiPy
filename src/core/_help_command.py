@@ -21,7 +21,7 @@ class CustomHelpCommand(commands.MinimalHelpCommand):
         
         return embed
 
-    def help_embed_field(
+    def split_embed_fields(
         self,
         ctx: commands.Context,
         embed: discord.Embed,
@@ -29,11 +29,20 @@ class CustomHelpCommand(commands.MinimalHelpCommand):
         commands: List[Tuple[str, str | None]],
         args: Optional[bool] = True
     ) -> None:
-        embed.add_field(name=f"__{title}:__",
-                        value="\n".join(["**" + re.sub(r'\[.*?\]', '', cmd_sign) + f"** {cmd_help}"
-                                        if 'help' not in cmd_sign else f"**{ctx.prefix}help** {cmd_help}"
-                                        for cmd_sign, cmd_help in commands]),
-                        inline=False)
+        MAX_FIELD_LENGTH = 1024
+        description = ''
+
+        for cmd_name, cmd_desc in commands:
+            cmd_text = f'**{cmd_name}**: {cmd_desc}\n' if cmd_desc else f'**{cmd_name}**\n'
+
+            if len(description) + len(cmd_text) > MAX_FIELD_LENGTH:
+                embed.add_field(name=title, value=description, inline=False)
+                description = ''
+
+            description += cmd_text
+
+        if description:
+            embed.add_field(name=title, value=description, inline=False)
         
     def help_embed_description(self, embed: discord.Embed, command: commands.Command):
         embed.description = (f"```Syntax: {self.get_command_signature(command)}" + 
@@ -62,7 +71,7 @@ class CustomHelpCommand(commands.MinimalHelpCommand):
         for cog, commands in mapping.items():
             if cmd_list := await self.get_cmd_list(commands):
                 cog_name = getattr(cog, "qualified_name", "No Category")
-                self.help_embed_field(ctx, embed, cog_name, cmd_list)
+                self.split_embed_fields(ctx, embed, cog_name, cmd_list)
 
         await self.send(embed=embed)
     
@@ -81,7 +90,7 @@ class CustomHelpCommand(commands.MinimalHelpCommand):
         cog_name = getattr(cog, "qualified_name", "No Category")
 
         if cog.description: embed.add_field(name=cog.description, value="ㅤ", inline=False)
-        self.help_embed_field(ctx, embed, cog_name, await self.get_cmd_list(cog.get_commands()))
+        self.split_embed_fields(ctx, embed, cog_name, await self.get_cmd_list(cog.get_commands()))
 
         await self.send(embed=embed)
     
@@ -90,6 +99,6 @@ class CustomHelpCommand(commands.MinimalHelpCommand):
         ctx = self.context
         embed = self.base_embed(ctx)
         self.help_embed_description(embed, group)
-        self.help_embed_field(ctx, embed, "Subcommands", await self.get_cmd_list(group.commands), False)
+        self.split_embed_fields(ctx, embed, "Subcommands", await self.get_cmd_list(group.commands), False)
 
         await self.send(embed=embed)
