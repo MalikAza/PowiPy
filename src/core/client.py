@@ -68,7 +68,7 @@ class Client(commands.Bot):
     
     def get_main_guild(self) -> discord.Guild:
         return discord.Object(id=os.getenv('GUILD_ID'))
-    
-    def run(self, *args, **kwargs):
+
+    async def login(self, token: str) -> None:
         logging.getLogger('powipy').info('Connecting to Discord...')
-        super().run(*args, **kwargs)
+        return await super().login(token)

@@ -1,4 +1,5 @@
 import logging
+import sys
 import traceback
 from typing import List, Optional, Union
 import discord
@@ -111,6 +112,11 @@ class Core(commands.Cog):
     @commands.is_owner()
     async def shutdown(self, ctx: commands.Context):
         await ctx.send("Shutting down...")
+        
+        session = self.bot.http._HTTPClient__session
+        if session and not session.closed:
+            await session.close()
+
         await ctx.bot.close()
 
     @commands.command(help='Synchronize the app commands with the Discord API.')

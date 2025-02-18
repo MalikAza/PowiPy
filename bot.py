@@ -4,6 +4,10 @@ load_dotenv()
 
 from src import Client
 
-token = os.getenv('TOKEN')
-bot = Client(command_prefix=";")
-bot.run(token, log_handler=None)
+def main():
+    token = os.getenv('TOKEN')
+    bot = Client(command_prefix=";")
+    bot.run(token, log_handler=None)
+
+if __name__ == '__main__':
+    main()
