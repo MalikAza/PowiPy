@@ -113,4 +113,4 @@ async def menu(
             except (discord.errors.Forbidden, discord.errors.NotFound):
                 break
 
-        return message
+    return message
