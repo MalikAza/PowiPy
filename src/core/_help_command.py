@@ -48,7 +48,7 @@ class CustomHelpCommand(commands.MinimalHelpCommand):
         embed.description = (f"```Syntax: {self.get_command_signature(command)}" + 
                             ((f"\nAlias: " + ', '.join(command.aliases)) if command.aliases else '') +
                             '```')
-        embed.add_field(name=command.help, value="ㅤ")
+        embed.add_field(name='Description', value=command.help or "ㅤ")
     
     async def get_cmd_list(self, commands: List[commands.Command[Any, ..., Any]]):
         if filtered_cmds := await self.filter_commands(commands, sort=True):
