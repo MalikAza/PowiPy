@@ -1,11 +1,11 @@
 import discord
 from discord.ext import commands
+from discord.utils import format_dt
 import os
 import sys
 import datetime
 from src.core.client import Client
 from src.utils.user import get_status, get_roles_string
-from src.utils.dtimestamp import DateTo
 from src.utils.chat_formatting import humanize_timedelta
 
 class General(commands.Cog):
@@ -144,8 +144,8 @@ class General(commands.Cog):
         joined_at = user.joined_at
         since_created = (ctx.message.created_at - user.created_at).days
         since_joined = (ctx.message.created_at - joined_at).days
-        user_joined = DateTo(joined_at.strftime("%d/%m/%Y %H:%M")).longdate
-        user_created = DateTo(user.created_at.strftime("%d/%m/%Y %H:%M")).longdate
+        user_joined = format_dt(joined_at, 'D')
+        user_created = format_dt(user.created_at, 'D')
         created_on = ("{}\n(il y a {} jours)").format(user_created, since_created)
         joined_on = ("{}\n(il y a {} jours)").format(user_joined, since_joined)
         # Voice
