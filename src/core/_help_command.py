@@ -1,104 +1,158 @@
-import re
-from typing import Any, List, Mapping, Optional, Tuple
+from dataclasses import dataclass
+from logging import config
+from typing import Any, List, Mapping, Optional
 from discord.ext import commands
 import discord
+
+@dataclass
+class EmbedConfig:
+    """Configuration class for Embed styling and formatting"""
+    color: discord.Color = discord.Color(value=0xfee695) # Powi Color
+    max_field_length: int = 1024
+    max_command_help_length: int = 50
+    empty_value: str = "ㅤ"
 
 class CustomHelpCommand(commands.MinimalHelpCommand):
 
     def __init__(self):
         super().__init__()
-        self.POWI_COLOR = 0xfee695
+        self.config = EmbedConfig()
+        self.POWI_COLOR = discord.Color(value=0xfee695)
 
-### Utilies method ###
     async def send(self, **kwargs):
+        """Wrapper method for sending messages to the destination"""
         await self.get_destination().send(**kwargs)
 
-    def base_embed(self, ctx: commands.Context) -> discord.Embed:
-        embed = discord.Embed(color=discord.Color(value=self.POWI_COLOR))
-        embed.set_author(name=f"{ctx.me.name} Help Menu", icon_url=ctx.me.avatar.url)
-        embed.set_footer(text=f"Type {ctx.prefix}help <command> for more info on a command. " + 
-                                f"You can also type {ctx.prefix}help <category> for more info on a category.")
+    def create_base_embed(self, ctx: commands.Context) -> discord.Embed:
+        """Creates a base embed with consistent styling"""
+        return discord.Embed(
+            color=self.config.color
+        ).set_author(
+            name=f"{ctx.me.name} Help Menu",
+            icon_url=ctx.me.avatar.url
+        ).set_footer(
+            text=self._get_footer_text(ctx.prefix)
+        )
+    
+    def _get_footer_text(self, prefix: str) -> str:
+        """Generates consistent footer text"""
+        return (
+            f"Type {prefix}help <command> for more info on a command. "
+            f"You can also type {prefix}help <category> for more info on a category."
+        )
+    
+    def _get_command_signature_block(self, command: commands.Command) -> str:
+        """Creates a formatted command signature block"""
+        signature = f"Syntax: {self.get_command_signature(command)}"
+        if command.aliases:
+            signature += f"\nAliases: {','.join(command.aliases)}"
+        return f"```{signature}```"
+    
+    def get_command_help_preview(self, command: commands.Command) -> str:
+        """Gets a truncated preview of the command's help text"""
+        if not command.help:
+            return ''
         
-        return embed
-
-    def split_embed_fields(
+        help_text = command.help.split('\n')[0]
+        if len(help_text) > self.config.max_command_help_length:
+            help_text = f"{help_text[:self.config.max_command_help_length]}..."
+        return help_text
+    
+    def add_commands_to_field(
         self,
-        ctx: commands.Context,
         embed: discord.Embed,
         title: str,
-        commands: List[Tuple[str, str | None]],
-        args: Optional[bool] = True
+        commands: List[commands.Command],
+        inline: bool = False
     ) -> None:
-        MAX_FIELD_LENGTH = 1024
-        description = ''
+        """Adds commands to embed fields, splitting if necessary"""
+        current_field = []
+        current_length = 0
 
-        for cmd_name, cmd_desc in commands:
-            cmd_text = f'**{cmd_name}**: {cmd_desc}\n' if cmd_desc else f'**{cmd_name}**\n'
+        for command in commands:
+            command_help = self.get_command_help_preview(command)
+            command_text = (
+                f"**{command.name}** {command_help}\n"
+                if command_help
+                else f"**{command.name}**\n"
+            )
 
-            if len(description) + len(cmd_text) > MAX_FIELD_LENGTH:
-                embed.add_field(name=title, value=description, inline=False)
-                description = ''
+            if current_length + len(command_text) > self.config.max_field_length:
+                embed.add_field(
+                    name=f"__{title}:__",
+                    value=''.join(current_field),
+                    inline=inline
+                )
+                current_field = []
+                current_length = 0
 
-            description += cmd_text
+            current_field.append(command_text)
+            current_length += len(command_text)
 
-        if description:
-            embed.add_field(name=title, value=description, inline=False)
+        if current_field:
+            embed.add_field(
+                name=f"__{title}:__",
+                value=''.join(current_field),
+                inline=inline
+            )
+
+    async def send_error_messages(self, error) -> None:
+        return
+    
+    async def send_bot_help(
+        self,
+        mapping: Mapping[Optional[commands.Cog], List[commands.Command[Any, ..., Any]]],
+        /
+    ) -> None:
+        ctx = self.context
+        embed = self.create_base_embed(ctx)
+
+        for cog, cog_commands in mapping.items():
+            filtered_commands = await self.filter_commands(cog_commands, sort=True)
+            if not filtered_commands:
+                continue
+
+            cog_name = getattr(cog, 'qualified_name', 'No Category')
+            self.add_commands_to_field(embed, cog_name, filtered_commands)
+
+        await self.send(embed=embed)
+
+    async def send_command_help(self, command: commands.Command) -> None:
+        embed = self.create_base_embed(self.context)
+        embed.description = self._get_command_signature_block(command)
+        embed.add_field(
+            name=command.help or self.config.empty_value,
+            value=self.config.empty_value
+        )
+
+        await self.send(embed=embed)
+
+    async def send_cog_help(self, cog: commands.Cog) -> None:
+        embed = self.create_base_embed(self.context)
+        cog_name = getattr(cog, 'qualified_name', 'No Category')
+
+        if cog.description:
+            embed.add_field(
+                name=cog.description,
+                value=self.config.empty_value,
+                inline=False
+            )
+
+        cog_commands = await self.filter_commands(cog.get_commands(), sort=True)
+        self.add_commands_to_field(embed, cog_name, cog_commands)
+
+        await self.send(embed=embed)
+
+    async def send_group_help(self, group: commands.Group) -> None:
+        embed = self.create_base_embed(self.context)
+        embed.description = self._get_command_signature_block(group)
+
+        embed.add_field(
+            name=group.help or self.config.empty_value,
+            value=self.config.empty_value
+        )
+
+        group_commands = await self.filter_commands(group.commands, sort=True)
+        self.add_commands_to_field(embed, "Subcommands", group_commands)
         
-    def help_embed_description(self, embed: discord.Embed, command: commands.Command):
-        embed.description = (f"```Syntax: {self.get_command_signature(command)}" + 
-                            ((f"\nAlias: " + ', '.join(command.aliases)) if command.aliases else '') +
-                            '```')
-        embed.add_field(name='Description', value=command.help or "ㅤ")
-    
-    async def get_cmd_list(self, commands: List[commands.Command[Any, ..., Any]]):
-        if filtered_cmds := await self.filter_commands(commands, sort=True):
-            cmds: List[Tuple[str, str | None]] = []
-            for cmd in filtered_cmds:
-                cmds.append((self.get_command_signature(cmd), cmd.help))
-
-            return cmds
-        
-        return False
-######
-
-    async def send_error_message(self, error): return
-
-    # [prefix]help
-    async def send_bot_help(self, mapping: Mapping[Optional[commands.Cog], List[commands.Command[Any, ..., Any]]], /):
-        ctx = self.context
-        embed = self.base_embed(ctx)
-
-        for cog, commands in mapping.items():
-            if cmd_list := await self.get_cmd_list(commands):
-                cog_name = getattr(cog, "qualified_name", "No Category")
-                self.split_embed_fields(ctx, embed, cog_name, cmd_list)
-
-        await self.send(embed=embed)
-    
-    # [prefix]help command
-    async def send_command_help(self, command: commands.Command):
-        ctx = self.context
-        embed = self.base_embed(ctx)
-        self.help_embed_description(embed, command)
-
-        await self.send(embed=embed)
-
-    # [prefix]help Class_name_from_cog
-    async def send_cog_help(self, cog: commands.Cog):
-        ctx = self.context
-        embed = self.base_embed(ctx)
-        cog_name = getattr(cog, "qualified_name", "No Category")
-
-        if cog.description: embed.add_field(name=cog.description, value="ㅤ", inline=False)
-        self.split_embed_fields(ctx, embed, cog_name, await self.get_cmd_list(cog.get_commands()))
-
-        await self.send(embed=embed)
-    
-    # [prefix]help group_command
-    async def send_group_help(self, group: commands.Group):
-        ctx = self.context
-        embed = self.base_embed(ctx)
-        self.help_embed_description(embed, group)
-        self.split_embed_fields(ctx, embed, "Subcommands", await self.get_cmd_list(group.commands), False)
-
         await self.send(embed=embed)
