@@ -90,7 +90,7 @@ def init_events(bot: Client):
             tb_error = ''.join(traceback.format_exception(type(error), error, error.__traceback__))
 
             bot._last_error = tb_error
-            logging.getLogger('powipy').error(tb_error)
+            bot._logger.error(tb_error)
 
             await ctx.reply(f"```Error in command '{ctx.command.name}'.\nPlease check console.```")
 
@@ -101,8 +101,9 @@ class OnAppCommandErrorHandler:
     def set_bot(cls, bot: Client):
         cls.bot = bot
 
-    @staticmethod
+    @classmethod
     async def on_app_command_error(
+        cls,
         interaction: discord.Interaction,
         error: discord.app_commands.AppCommandError
     ) -> None:
@@ -147,7 +148,7 @@ class OnAppCommandErrorHandler:
             tb_error = ''.join(traceback.format_exception(type(error), error, error.__traceback__))
 
             OnAppCommandErrorHandler.bot._last_error = tb_error
-            logging.getLogger('powipy').error(tb_error)
+            cls.bot._logger.error(tb_error)
             
             await interaction.response.send_message(
                 "An unexpected error occurred!",

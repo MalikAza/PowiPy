@@ -12,10 +12,9 @@ class General(commands.Cog):
     def __init__(self, bot: Client):
         self.bot = bot
 
-    @commands.command(aliases=['powinfo'], help="Display Bot's informations")
+    @commands.command(help="Display Bot's informations")
     async def info(self, ctx: commands.Context):
-        powi_guild = self.bot.get_main_guild()
-        owner = await powi_guild.fetch_member(os.getenv('OWNER_ID'))
+        owner = self.bot.get_owner()
         py_version = "[{}.{}.{}]({})".format(*sys.version_info[:3], "https://www.python.org/")
         dpy_version = "[{}]({})".format(discord.__version__, "https://github.com/Rapptz/discord.py")
         bot_name = self.bot.user.name

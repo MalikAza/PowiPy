@@ -40,3 +40,5 @@ def init_logging(log_name: str, log_level: int, file_log_level: Optional[int] = 
 
     logger.addHandler(file_handler)
     logger.addHandler(console_handler)
+
+    return logger

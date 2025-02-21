@@ -81,7 +81,7 @@ class Core(commands.Cog):
         except Exception as error:
             tb_error = ''.join(traceback.format_exception(type(error), error, error.__traceback__))
             self.bot._last_error = tb_error
-            logging.getLogger('powipy').error(tb_error)
+            self.bot._logger.error(tb_error)
             raise error
 
     @commands.command(help='Unload a specific loaded cog.')
@@ -93,7 +93,7 @@ class Core(commands.Cog):
         except Exception as error:
             tb_error = ''.join(traceback.format_exception(type(error), error, error.__traceback__))
             self.bot._last_error = tb_error
-            logging.getLogger('powipy').error(tb_error)
+            self.bot._logger.error(tb_error)
             raise error
 
     @commands.command(help='Reload a specific cog.')
@@ -105,7 +105,7 @@ class Core(commands.Cog):
         except Exception as error:
             tb_error = ''.join(traceback.format_exception(type(error), error, error.__traceback__))
             self.bot._last_error = tb_error
-            logging.getLogger('powipy').error(tb_error)
+            self.bot._logger.error(tb_error)
             raise error
 
     @commands.command(help='Stops the bot.')

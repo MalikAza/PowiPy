@@ -20,7 +20,7 @@ class Client(commands.Bot):
         intents.message_content = True
         super().__init__(command_prefix=command_prefix, intents=intents, help_command=CustomHelpCommand())
 
-        init_logging('powipy', log_level=logging.INFO, file_log_level=logging.WARNING)
+        self._logger = init_logging('powipy', log_level=logging.INFO, file_log_level=logging.WARNING)
         self._init_events()
 
     async def setup_hook(self):
@@ -70,8 +70,11 @@ class Client(commands.Bot):
         return discord.Object(id=os.getenv('GUILD_ID'))
 
     async def login(self, token: str) -> None:
-        logging.getLogger('powipy').info('Connecting to Discord...')
+        self._logger.info('Connecting to Discord...')
         return await super().login(token)
+    
+    def get_owner(self) -> discord.User:
+        return self.get_user(os.getenv('OWNER_ID'))
     
     async def send_to_owner(
         self,
@@ -92,5 +95,5 @@ class Client(commands.Bot):
     ) -> discord.Message:
         args = {key: value for key, value in locals().items() if key != 'self'}
         
-        owner = self.get_user(os.getenv('OWNER_ID'))
+        owner = self.get_owner()
         return await owner.send(**args)
