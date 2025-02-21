@@ -1,5 +1,4 @@
 from dataclasses import dataclass
-from logging import config
 from typing import Any, List, Mapping, Optional
 from discord.ext import commands
 import discord
@@ -17,7 +16,6 @@ class CustomHelpCommand(commands.MinimalHelpCommand):
     def __init__(self):
         super().__init__()
         self.config = EmbedConfig()
-        self.POWI_COLOR = discord.Color(value=0xfee695)
 
     async def send(self, **kwargs):
         """Wrapper method for sending messages to the destination"""
@@ -95,9 +93,6 @@ class CustomHelpCommand(commands.MinimalHelpCommand):
                 value=''.join(current_field),
                 inline=inline
             )
-
-    async def send_error_messages(self, error) -> None:
-        return
     
     async def send_bot_help(
         self,
