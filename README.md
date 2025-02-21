@@ -4,9 +4,7 @@ This repo is for personnal use and you may not be able to fully used this bot, u
 
 # Configuration
 
-[Python](https://www.python.org/) version needed: 3.8 | 3.9 | 3.10
-
-Those versions are needed to run [discord.py](https://github.com/Rapptz/discord.py) v2.\*
+[Python](https://www.python.org/) version needed: 3.10+
 
 You need to create a Discord App in the [Discord Developer Portal](https://discord.com/developers/), create a bot app and check all the Intents. _(Also uncheck `public bot`)_
 
@@ -35,4 +33,4 @@ cd PowiPy/
 python3 bot.py
 ```
 
-_You may need to specify your python version. Ex: `python3.8 bot.py`_
+_You may need to specify your python version. Ex: `python3.10 bot.py`_
