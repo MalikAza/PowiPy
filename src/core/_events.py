@@ -6,6 +6,8 @@ import discord
 from discord.ext import commands
 
 from src.core._cog_loader import CogLoader
+from src.core._help_command import CustomHelpCommand, EmbedConfig
+from src.utils.commands import find_similar_commands
 from .client import Client
 
 from rich import print
@@ -50,18 +52,47 @@ def init_events(bot: Client):
         print(separator, f"Invite link:\n[cyan]{invite_link}[/cyan]", sep='\n', end='\n\n')
 
     @bot.event
+    async def on_command(ctx: commands.Context):
+        """Handle empty group command invocations"""
+        if isinstance(ctx.command, commands.Group) and not ctx.invoked_subcommand:
+            await ctx.send_help(ctx.command)
+
+    @bot.event
     async def on_command_error(ctx: commands.Context, error: Exception):
+        error = getattr(error, 'original', error)
+
         if isinstance(error, commands.MissingRequiredArgument):
-            await ctx.send_help(ctx.command.name)
+            await ctx.send_help(ctx.command)
+
         elif isinstance(error, commands.CommandNotFound):
-            pass
+            message_content = ctx.message.content.strip()
+            attempted_command = message_content[len(ctx.prefix):].split()[0]
+
+            available_commands = [cmd for cmd in bot.commands]
+            similar_commands = find_similar_commands(attempted_command, available_commands)
+
+            if similar_commands:
+                suggestion = similar_commands[0]
+                embed = discord.Embed(
+                    color=EmbedConfig().color,
+                    title="Did you mean...?",
+                    description=f"**{ctx.prefix}{suggestion.name}** {CustomHelpCommand().get_command_help_preview(suggestion)}"
+                )
+                await ctx.reply(embed=embed)
+        elif isinstance(error, commands.MissingPermissions):
+            missing_perms = [perm.replace('_', ' ').title() for perm in error.missing_permissions]
+            perms_list = '\n'.join(f"- {perm}" for perm in missing_perms)
+
+            await ctx.reply(f"You need the following permissions:\n{perms_list}")
+        elif isinstance(error, commands.BadArgument):
+            await ctx.reply(f"Invalid argument: {str(error)}")
         else:
             tb_error = ''.join(traceback.format_exception(type(error), error, error.__traceback__))
 
             bot._last_error = tb_error
             logging.getLogger('powipy').error(tb_error)
 
-            await ctx.send(f"```Error in command '{ctx.command.name}'.\nPlease check console.```")
+            await ctx.reply(f"```Error in command '{ctx.command.name}'.\nPlease check console.```")
 
 class OnAppCommandErrorHandler:
     bot: Client | None = None
