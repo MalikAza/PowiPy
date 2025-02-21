@@ -1,6 +1,4 @@
-My personnal (but not main one) Discord's Bot, written in Python, from scratch.
-
-This repo is for personnal use and you may not be able to fully used this bot, unless you know what to do with the environment variables and the lines who depends on it.
+My personnal Python Discord's bot.
 
 # Configuration
 
