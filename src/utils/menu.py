@@ -47,13 +47,11 @@ async def menu(
     if not pages:
         raise ValueError("Cannot create a menu with no pages.")
     
-    print(message)
     if not message:
         if isinstance(pages[page], discord.Embed):
             message = await ctx.send(embed=pages[page])
         else:
             message = await ctx.send(pages[page])
-    print(message)
 
     active_controls = controls if controls is not None else DEFAULT_CONTROLS
 
