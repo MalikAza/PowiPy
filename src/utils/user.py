@@ -1,3 +1,4 @@
+from typing import Union
 import discord
 
 def handle_custom(user: discord.Member):
@@ -79,7 +80,10 @@ def get_status_string(user: discord.Member):
             string += f"{status_string}\n"
         return string
 
-def get_status_emoji(user: discord.Member):
+def get_status_emoji(user: Union[discord.Member, discord.User]):
+    if isinstance(user, discord.User):
+        return "\N{MEDIUM WHITE CIRCLE}"
+    
     if any(a.type is discord.ActivityType.streaming for a in user.activities):
         statusemoji = "\N{LARGE PURPLE CIRCLE}"
     elif user.status.name == "online":
