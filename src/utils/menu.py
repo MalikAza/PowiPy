@@ -8,13 +8,13 @@ _PageList = List[_PageType]
 _ControlCallable = Callable[[commands.Context, _PageList, discord.Message, int, float], int]
 
 DEFAULT_CONTROLS: Mapping[str, _ControlCallable] = {
-    "⬅️": lambda ctx, pages, message, page, timeout: (page - 1) if page > 0 else len(pages) - 1,
-    "❌": lambda ctx, pages, message, page, timeout: -1,
-    "➡️": lambda ctx, pages, message, page, timeout: (page + 1) if page < len(pages) - 1 else 0,
+    "⬅️": lambda ctx_or_interaction, pages, message, page, timeout: (page - 1) if page > 0 else len(pages) - 1,
+    "❌": lambda ctx_or_interaction, pages, message, page, timeout: -1,
+    "➡️": lambda ctx_or_interaction, pages, message, page, timeout: (page + 1) if page < len(pages) - 1 else 0,
 }
 
 async def menu(
-    ctx: commands.Context,
+    ctx_or_interaction: Union[commands.Context, discord.Interaction],
     pages: _PageList,
     controls: Optional[Mapping[str, _ControlCallable]] = None,
     message: Optional[discord.Message] = None,
@@ -22,14 +22,15 @@ async def menu(
     timeout: float = 30.0,
     *,
     user: Optional[discord.User] = None,
+    ephemeral: bool = False
 ) -> Optional[discord.Message]:
     """
     Creates a reaction-based menu for navigating pages.
     
     Parameters:
     -----------
-    ctx: commands.Context
-        The context of the command.
+    ctx_or_interaction: Union[commands.Context, discord.Interaction]
+        The context or interaction of the command.
     pages: List[str] or List[discord.Embed]
         The pages to display in the menu.
     controls: Optional[Mapping[str, _ControlCallable]]
@@ -42,16 +43,51 @@ async def menu(
         How long to wait for a reaction (in seconds).
     user: Optional[discord.User]
         The user who can interact with the menu. If None, only the command invoker can interact.
+    ephemeral: bool
+        Whether the message should be ephemeral (only visible to the invoker).
+        Only applies to interactions and will be ignored for traditional commands.
     """
 
     if not pages:
         raise ValueError("Cannot create a menu with no pages.")
     
-    if not message:
-        if isinstance(pages[page], discord.Embed):
-            message = await ctx.send(embed=pages[page])
-        else:
-            message = await ctx.send(pages[page])
+    is_interaction = isinstance(ctx_or_interaction, discord.Interaction)
+
+    # Handle initial message / response if none is provided
+    ## Interaction case
+    if is_interaction:
+        interaction = ctx_or_interaction
+        bot = interaction.client
+        author = interaction.user
+
+        if not message:
+            if isinstance(pages[page], discord.Embed):
+                if interaction.response.is_done():
+                    message = await interaction.followup.send(embed=pages[page], ephemeral=ephemeral, wait=True)
+                else:
+                    await interaction.response.send_message(embed=pages[page], ephemeral=ephemeral)
+                    message = await interaction.original_response()
+            else:
+                if interaction.response.is_done():
+                    message = await interaction.followup.send(content=pages[page], ephemeral=ephemeral, wait=True)
+                else:
+                    await interaction.response.send_message(content=pages[page], ephemeral=ephemeral)
+                    message = await interaction.original_response()
+    ## Context case
+    else:
+        ctx = ctx_or_interaction
+        bot = ctx.bot
+        author = ctx.author
+    
+        if not message:
+            if isinstance(pages[page], discord.Embed):
+                message = await ctx.send(embed=pages[page])
+            else:
+                message = await ctx.send(content=pages[page])
+
+    # Skip reactions for ephemerals (not supported)
+    if is_interaction and ephemeral:
+        return message
 
     active_controls = controls if controls is not None else DEFAULT_CONTROLS
 
@@ -66,11 +102,10 @@ async def menu(
         return (
             reaction.message.id == message.id
             and str(reaction.emoji in active_controls)
-            and (user_check == ctx.author if user is None else user_check == user)
+            and (user_check == author if user is None else user_check == user)
         )
     
     current_page = page
-    bot: commands.Bot = ctx.bot
 
     while True:
         try:
