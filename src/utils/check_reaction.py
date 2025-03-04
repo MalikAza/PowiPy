@@ -74,7 +74,7 @@ class ReactionMenu:
         self.bot: Client = ctx.bot
         self.timeout = timeout
         self.message: Optional[discord.Message] = None
-        self.target_user = Optional[Union[discord.User, discord.Member]] = ctx.author
+        self.target_user: Optional[Union[discord.User, discord.Member]] = ctx.author
 
     def set_target_user(self, user: Optional[Union[discord.User, discord.Member]]) -> None:
         """Set which user should be allowed to interact with this menu.
