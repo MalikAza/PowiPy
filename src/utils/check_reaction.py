@@ -109,11 +109,11 @@ class ReactionMenu:
 
     async def send(self, content: str, *, embed: Optional[discord.Embed] = None) -> discord.Message:
         """Send or edit the menu message."""
-        return self._update_message(content, embed, self.ctx.send)
+        return await self._update_message(content, embed, self.ctx.send)
     
     async def reply(self, content: str, *, embed: Optional[discord.Embed] = None) -> discord.Message:
         """Reply or edit the menu message."""
-        return self._update_message(content, embed, self.ctx.reply)
+        return await self._update_message(content, embed, self.ctx.reply)
     
     async def add_reactions(self, emoji_list: List[str]) -> None:
         """Add a list of reactions to the menu message."""
