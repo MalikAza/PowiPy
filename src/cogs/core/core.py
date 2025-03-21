@@ -1,5 +1,3 @@
-import logging
-import sys
 import traceback
 from typing import List, Optional, Union
 import discord

@@ -1,7 +1,5 @@
 from typing import Literal
 
-from .chat_formatting import humanize_timedelta
-
 class SetParser:
     sum: int
     operation: Literal['withdraw', 'deposit', 'set']

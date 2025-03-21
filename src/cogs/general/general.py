@@ -1,7 +1,6 @@
 import discord
 from discord.ext import commands
 from discord.utils import format_dt
-import os
 import sys
 import datetime
 from src.core.client import Client
