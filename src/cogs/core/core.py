@@ -154,7 +154,8 @@ class Core(commands.Cog):
     @commands.group(name="set", help="Various settings for the bot")
     @commands.is_owner()
     async def _set(self, ctx: commands.Context):
-        pass
+        if ctx.invoked_subcommand is None:
+            await ctx.send_help(ctx.command)
 
     @_set.command(help="Set the bot's avatar")
     @commands.is_owner()
@@ -258,7 +259,7 @@ class Core(commands.Cog):
 
     @_set.command(name="status", help="Set the bot's status")
     @commands.is_owner()
-    async def _status(self, ctx: commands.Context, *, status: str = None):
+    async def _status(self, ctx: commands.Context, *, status: str = 'online'):
         statuses = {
             "online": discord.Status.online,
             "idle": discord.Status.idle,
@@ -270,7 +271,7 @@ class Core(commands.Cog):
         try:
             status = statuses[status.lower()]
         except KeyError:
-            await ctx.send_help()
+            await ctx.reply(f"Status must be one of the following: {', '.join([key for key in statuses])}")
         else:
             await ctx.bot.change_presence(status=status, activity=game)
             await ctx.reply("Status changed to {}.".format(status))

@@ -51,11 +51,11 @@ def init_events(bot: Client):
         invite_link = bot.get_invite_link()
         print(separator, f"Invite link:\n[cyan]{invite_link}[/cyan]", sep='\n', end='\n\n')
 
-    @bot.event
-    async def on_command(ctx: commands.Context):
-        """Handle empty group command invocations"""
-        if isinstance(ctx.command, commands.Group) and not ctx.invoked_subcommand:
-            await ctx.send_help(ctx.command)
+    # @bot.event
+    # async def on_command(ctx: commands.Context):
+    #     """Handle empty group command invocations"""
+    #     if isinstance(ctx.command, commands.Group) and ctx.invoked_subcommand is None:
+    #         await ctx.send_help(ctx.command)
 
     @bot.event
     async def on_command_error(ctx: commands.Context, error: Exception):

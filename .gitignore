@@ -2,8 +2,14 @@
 .env
 .venv
 desktop.ini
+__pycache__
+
 powi.png
+
 src/cogs/*
 !src/cogs/general/
 !src/cogs/core/
+logs
+data
+
 requirements-cog.txt
