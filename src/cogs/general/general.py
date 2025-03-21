@@ -3,6 +3,7 @@ from discord.ext import commands
 from discord.utils import format_dt
 import sys
 import datetime
+from src.core._help_command import EmbedConfig
 from src.core.client import Client
 from src.utils.user import get_status, get_roles_string
 from src.utils.chat_formatting import humanize_timedelta
@@ -17,13 +18,12 @@ class General(commands.Cog):
         py_version = "[{}.{}.{}]({})".format(*sys.version_info[:3], "https://www.python.org/")
         dpy_version = "[{}]({})".format(discord.__version__, "https://github.com/Rapptz/discord.py")
         bot_name = self.bot.user.name
-        since_created = (ctx.message.created_at - self.bot.user.created_at).days
-        created = self.bot.user.created_at.strftime("%d %b %Y %H:%M")
-        footer = f"{created} ({since_created} days ago)"
+        since_created = format_dt(self.bot.user.created_at, 'R')
+        created = format_dt(self.bot.user.created_at, 'f')
+        created_field = f"{created} ({since_created})"
 
-
-        data = discord.Embed(color=discord.Colour(0xE9D286))
-        data.add_field(name="Bot's owner", value=f"{owner.name}#{owner.discriminator}")
+        data = discord.Embed(color=EmbedConfig.color)
+        data.add_field(name="Bot's owner", value=owner.name)
         data.add_field(name="Python", value=py_version)
         data.add_field(name="discord.py", value=dpy_version)
         data.add_field(
@@ -31,7 +31,10 @@ class General(commands.Cog):
             value=f"{bot_name} is bot created by {owner.mention}.",
             inline=False
         )
-        data.set_footer(text=footer, icon_url=self.bot.user.avatar)
+        data.add_field(
+            name="Creation",
+            value=created_field
+        )
 
         await ctx.reply(embed=data)
 
