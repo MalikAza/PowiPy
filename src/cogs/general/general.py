@@ -90,7 +90,7 @@ class General(commands.Cog):
         )
 
         embed = discord.Embed(description=(f"{server.description}\n\n" if server.description else "") + created_at,
-                color=server.me.color)
+                color=EmbedConfig.color)
 
         embed.set_author(name=server.name,
         icon_url="https://cdn.discordapp.com/emojis/457879292152381443.png" if "VERIFIED" in server.features
