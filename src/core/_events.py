@@ -62,8 +62,9 @@ def init_events(bot: Client):
 
         if isinstance(error, commands.MissingRequiredArgument):
             await ctx.send_help(ctx.command)
+            return
 
-        elif isinstance(error, commands.CommandNotFound):
+        if isinstance(error, commands.CommandNotFound):
             message_content = ctx.message.content.strip()
             attempted_command = message_content[len(ctx.prefix):].split()[0]
 
@@ -78,20 +79,29 @@ def init_events(bot: Client):
                     description=f"**{ctx.prefix}{suggestion.name}** {CustomHelpCommand().get_command_help_preview(suggestion)}"
                 )
                 await ctx.reply(embed=embed)
-        elif isinstance(error, commands.MissingPermissions):
+
+            return
+        
+        if isinstance(error, commands.MissingPermissions):
             missing_perms = [perm.replace('_', ' ').title() for perm in error.missing_permissions]
             perms_list = '\n'.join(f"- {perm}" for perm in missing_perms)
 
             await ctx.reply(f"You need the following permissions:\n{perms_list}")
-        elif isinstance(error, commands.BadArgument):
+            return
+        
+        if isinstance(error, commands.BadArgument):
             await ctx.reply(f"Invalid argument: {str(error)}")
-        else:
-            tb_error = ''.join(traceback.format_exception(type(error), error, error.__traceback__))
+            return
+        
+        if isinstance(error, commands.NotOwner):
+            return
 
-            bot._last_error = tb_error
-            bot._logger.error(tb_error)
+        tb_error = ''.join(traceback.format_exception(type(error), error, error.__traceback__))
 
-            await ctx.reply(f"```Error in command '{ctx.command.name}'.\nPlease check console.```")
+        bot._last_error = tb_error
+        bot._logger.error(tb_error)
+
+        await ctx.reply(f"```Error in command '{ctx.command.name}'.\nPlease check console.```")
 
 class OnAppCommandErrorHandler:
     bot: Client | None = None
