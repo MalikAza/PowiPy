@@ -1,5 +1,5 @@
 from src.core.client import Client
-from .general import General
+from .owner import Owner
 
 async def setup(bot: Client):
-    await bot.add_cog(General(bot))
+    await bot.add_cog(Owner(bot))

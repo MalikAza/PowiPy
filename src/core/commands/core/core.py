@@ -8,7 +8,7 @@ from src.core.client import Client
 from src.utils.user import get_status, get_roles_string
 from src.utils.chat_formatting import humanize_timedelta
 
-class General(commands.Cog):
+class Core(commands.Cog):
     def __init__(self, bot: Client):
         self.bot = bot
 
@@ -187,6 +187,3 @@ class General(commands.Cog):
         data.set_author(name=user, icon_url=url)
 
         await ctx.reply(embed=data)
-
-async def setup(bot):
-    await bot.add_cog(General(bot))

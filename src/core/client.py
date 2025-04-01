@@ -13,7 +13,7 @@ class LoadedAndUnloadedCogs(TypedDict):
     unloaded: List[str]
 
 class Client(commands.Bot):
-    _last_error: str
+    _last_error: str = None
 
     def __init__(self, command_prefix: str):
         intents = discord.Intents.all()
@@ -38,22 +38,27 @@ class Client(commands.Bot):
         """
         Retrieve a list of names of loaded cogs in the bot.
         """
-        return [str(cog).replace("src.", "").replace("cogs.", "") for cog in self.extensions]
+        return [
+            ext_name.replace(CogLoader.base_cog_import_path, "")
+            for ext_name in self.extensions.keys()
+            if not ext_name.startswith(CogLoader.core_cog_import_path)
+        ]
     
-    def _get_unloaded_cogs(self, loaded: List[str]) -> List[str]:
+    def _get_unloaded_cogs(self) -> List[str]:
         """
         Retrieve a list of unloaded cog filenames (without the .py extension) from the ./cogs directory.
         """
-        potential_cogs = CogLoader(self).get_potential_packages()
+        potential_cogs = set(CogLoader(self).get_potential_packages())
+        loaded = set(self._get_loaded_cogs())
 
-        return [cog for cog in potential_cogs if cog not in loaded]
+        return sorted(list(potential_cogs - loaded), key=str.lower)
 
     def get_cogs(self) -> LoadedAndUnloadedCogs:
         """
         Retrieve a dictionary containing the loaded and unloaded cogs names.
         """
         loaded = self._get_loaded_cogs()
-        unloaded = self._get_unloaded_cogs(loaded)
+        unloaded = self._get_unloaded_cogs()
         
         return {
             'loaded': loaded,

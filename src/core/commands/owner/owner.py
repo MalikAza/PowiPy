@@ -48,7 +48,7 @@ class ConfirmLeaveServer(discord.ui.View):
         else:
             await interaction.response.send_message(f"You're not {self.author}. Go away!", ephemeral=True)
 
-class Core(commands.Cog):
+class Owner(commands.Cog):
     def __init__(self, bot: Client):
         self.bot = bot
 
@@ -75,7 +75,9 @@ class Core(commands.Cog):
     async def load(self, ctx: commands.Context, extension: str):
         try:
             await self.bot.load_extension(f'{CogLoader.base_cog_import_path}{extension}')
-            await ctx.send(f"`{extension}` loaded.")
+            await ctx.reply(f"`{extension}` loaded.")
+        except commands.ExtensionNotFound:
+            await ctx.reply(f"Extension `{extension}` not found.")
         except Exception as error:
             tb_error = ''.join(traceback.format_exception(type(error), error, error.__traceback__))
             self.bot._last_error = tb_error
@@ -87,7 +89,9 @@ class Core(commands.Cog):
     async def unload(self, ctx: commands.Context, extension: str):
         try:
             await self.bot.unload_extension(f'{CogLoader.base_cog_import_path}{extension}')
-            await ctx.send(f"`{extension}` unloaded.")
+            await ctx.reply(f"`{extension}` unloaded.")
+        except commands.ExtensionNotLoaded:
+            await ctx.reply(f"Extension `{extension}` not loaded.")
         except Exception as error:
             tb_error = ''.join(traceback.format_exception(type(error), error, error.__traceback__))
             self.bot._last_error = tb_error
@@ -99,7 +103,9 @@ class Core(commands.Cog):
     async def reload(self, ctx: commands.Context, extension: str):
         try:
             await self.bot.reload_extension(f'{CogLoader.base_cog_import_path}{extension}')
-            await ctx.send(f"`{extension}` reloaded.")
+            await ctx.reply(f"`{extension}` reloaded.")
+        except commands.ExtensionNotLoaded:
+            await ctx.reply(f"Extension `{extension}` not loaded.")
         except Exception as error:
             tb_error = ''.join(traceback.format_exception(type(error), error, error.__traceback__))
             self.bot._last_error = tb_error
@@ -305,6 +311,3 @@ class Core(commands.Cog):
             await ctx.reply(f"```py\n{self.bot._last_error}\n```")
         else:
             await ctx.reply("No exception has occurred yet.")
-
-async def setup(bot):
-    await bot.add_cog(Core(bot))

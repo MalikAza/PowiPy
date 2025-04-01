@@ -14,6 +14,9 @@ class CogLoader:
     __cogs_dir = os.path.join(os.path.dirname(__file__), '../cogs')
     base_cog_import_path = 'src.cogs.'
 
+    __core_commands_dir = os.path.join(os.path.dirname(__file__), './commands')
+    core_cog_import_path = 'src.core.commands.'
+
     def __init__(self, bot: commands.Bot):
         self.bot = bot
         init_logging('CogLoader', log_level=logging.INFO, file_log_level=logging.WARNING)
@@ -23,18 +26,22 @@ class CogLoader:
         if not os.path.exists(self.__cogs_dir):
             raise CogLoadError(f"Cogs directory not found: {self.__cogs_dir}")
         
-    def get_potential_packages(self) -> List[str]:
+    def get_potential_packages(self, core: bool = False) -> List[str]:
+        cogs_dir = self.__cogs_dir if not core else self.__core_commands_dir
+
         try:
             return [
-                directory for directory in os.listdir(self.__cogs_dir)
-                if os.path.isdir(os.path.join(self.__cogs_dir, directory))
+                directory for directory in os.listdir(cogs_dir)
+                if os.path.isdir(os.path.join(cogs_dir, directory))
                 and directory != '__pycache__'
                 and not directory.startswith('.')
             ]
         except Exception as e:
             raise CogLoadError(f"Error reading cogs directory: {str(e)}")
 
-    async def __verify_cog_structure(self, cog_path: str) -> bool:
+    async def __verify_cog_structure(self, cog_path: str, core: bool) -> bool:
+        cog_import_path = self.base_cog_import_path if not core else self.core_cog_import_path
+
         try:
             init_path = os.path.join(cog_path, '__init__.py')
             if not os.path.exists(init_path):
@@ -44,7 +51,7 @@ class CogLoader:
             package_name = os.path.basename(cog_path)
 
             try:
-                module = importlib.import_module(f"{self.base_cog_import_path}{package_name}")
+                module = importlib.import_module(f"{cog_import_path}{package_name}")
 
                 if not hasattr(module, 'setup'):
                     self.logger.warning(f"No setup function found in {cog_path}")
@@ -60,12 +67,12 @@ class CogLoader:
             self.logger.warning(f"Error verifying cog structure for {cog_path}: {str(e)}")
             return False
 
-    async def __load_cog(self, cog_package: str):
-        cog_path = os.path.join(self.__cogs_dir, cog_package)
-        cog_import_path = f'{self.base_cog_import_path}{cog_package}'
+    async def __load_cog(self, cog_package: str, core: bool = False):
+        cog_path = os.path.join(self.__cogs_dir if not core else self.__core_commands_dir, cog_package)
+        cog_import_path = f'{self.base_cog_import_path if not core else self.core_cog_import_path}{cog_package}'
 
         try:
-            if not await self.__verify_cog_structure(cog_path):
+            if not await self.__verify_cog_structure(cog_path, core):
                 self.logger.warning(f"Skipping {cog_package} due to invalid structure")
                 return
 
@@ -78,6 +85,10 @@ class CogLoader:
         self.__check_directory()
 
         cog_packages = self.get_potential_packages()
+        core_packages = self.get_potential_packages(core=True)
 
         for cog_package in cog_packages:
             await self.__load_cog(cog_package)
+
+        for core_cog_package in core_packages:
+            await self.__load_cog(core_cog_package, core=True)
