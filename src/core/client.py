@@ -21,19 +21,18 @@ class Client(commands.Bot):
         super().__init__(command_prefix=command_prefix, intents=intents, help_command=CustomHelpCommand())
 
         self._logger = init_logging('powipy', log_level=logging.INFO, file_log_level=logging.WARNING)
-        self._init_events()
+        from ._events import get_ready
+        get_ready(self)
 
     async def setup_hook(self):
         await super().setup_hook()
 
+        from ._events import setup_events
+        setup_events(self)
+
         from ._events import OnAppCommandErrorHandler
         OnAppCommandErrorHandler.set_bot(self)
-
         self.tree.error(OnAppCommandErrorHandler.on_app_command_error)
-    
-    def _init_events(self):
-        from ._events import init_events
-        init_events(self)
 
     def _get_loaded_cogs(self) -> List[str]:
         """

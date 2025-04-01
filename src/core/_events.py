@@ -14,8 +14,7 @@ from rich.console import Console
 
 console = Console()
 
-def init_events(bot: Client):
-
+def get_ready(bot: Client):
     @bot.event
     async def on_ready():
         try:
@@ -50,12 +49,8 @@ def init_events(bot: Client):
         invite_link = bot.get_invite_link()
         print(separator, f"Invite link:\n[cyan]{invite_link}[/cyan]", sep='\n', end='\n\n')
 
-    # @bot.event
-    # async def on_command(ctx: commands.Context):
-    #     """Handle empty group command invocations"""
-    #     if isinstance(ctx.command, commands.Group) and ctx.invoked_subcommand is None:
-    #         await ctx.send_help(ctx.command)
-
+def setup_events(bot: Client):
+    
     @bot.event
     async def on_command_error(ctx: commands.Context, error: Exception):
         error = getattr(error, 'original', error)
