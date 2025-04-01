@@ -73,7 +73,7 @@ class Client(commands.Bot):
         return await super().login(token)
     
     def get_owner(self) -> discord.User:
-        return self.get_user(int(os.getenv('OWNER_ID')))
+        return self.get_user(self.owner_id)
     
     async def send_to_owner(
         self,
