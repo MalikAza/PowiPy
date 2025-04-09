@@ -17,7 +17,7 @@ TIME_RE = re.compile(
           | (?P<weeks>[\+-]?\d+)\s?(weeks?|w)
           | (?P<days>[\+-]?\d+)\s?(days?|d)
           | (?P<hours>[\+-]?\d+)\s?(hours?|hrs|hr?)
-          | (?P<minutes>[\+-]?\d+)\s?(minutes?|mins?|m)
+          | (?P<minutes>[\+-]?\d+)\s?(minutes?|mins?)
           | (?P<seconds>[\+-]?\d+)\s?(seconds?|secs?|s)
         ))+\b
     """,
@@ -93,7 +93,7 @@ class TimeUtils:
         allowed_units : Optional[List[str]]
             If provided, you can constrain a user to expressing the amount of time
             in specific units. The units you can chose to provide are the same as the
-            parser understands. (``weeks``, ``days``, ``hours``, ``minutes``, ``seconds``)
+            parser understands. (``months``, ``weeks``, ``days``, ``hours``, ``minutes``, ``seconds``)
 
         Returns
         -------
@@ -107,6 +107,7 @@ class TimeUtils:
             or if the value is out of bounds.
         """
         allowed_units = allowed_units or [
+            "months",
             "weeks",
             "days",
             "hours",
