@@ -17,7 +17,7 @@ TIME_RE = re.compile(
           | (?P<weeks>[\+-]?\d+)\s?(weeks?|w)
           | (?P<days>[\+-]?\d+)\s?(days?|d)
           | (?P<hours>[\+-]?\d+)\s?(hours?|hrs|hr?)
-          | (?P<minutes>[\+-]?\d+)\s?(minutes?|mins?)
+          | (?P<minutes>[\+-]?\d+)\s?(minutes?|mins?|min)
           | (?P<seconds>[\+-]?\d+)\s?(seconds?|secs?|s)
         ))+\b
     """,
@@ -120,11 +120,23 @@ class TimeUtils:
             maximum = timedelta.max
         params = cls._parse_and_match(argument, allowed_units)
         if params:
+            if "months" in params:
+                months_in_days = params['months'] * 30 # arbitrary value
+                if "days" in params:
+                    params["days"] += months_in_days
+                else:
+                    params["days"] = months_in_days
+                del params["months"]
+
             try:
                 delta = timedelta(**params)
             except OverflowError:
                 raise commands.BadArgument(
                     "The time set is way too high, consider setting something reasonable."
+                )
+            except TypeError as e:
+                raise commands.BadArgument(
+                    f"Invalid time parameters: {str(e)}"
                 )
             if maximum < delta:
                 raise commands.BadArgument(
