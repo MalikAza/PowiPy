@@ -18,7 +18,12 @@ class Client(commands.Bot):
     def __init__(self, command_prefix: str):
         intents = discord.Intents.all()
         intents.message_content = True
-        super().__init__(command_prefix=command_prefix, intents=intents, help_command=CustomHelpCommand())
+        super().__init__(
+            command_prefix=command_prefix,
+            intents=intents,
+            help_command=CustomHelpCommand(),
+            options={'owner_id': os.getenv('OWNER_ID')}
+        )
 
         self._logger = init_logging('powipy', log_level=logging.INFO, file_log_level=logging.WARNING)
         from ._events import get_ready
