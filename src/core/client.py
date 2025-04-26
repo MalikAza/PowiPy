@@ -21,9 +21,9 @@ class Client(commands.Bot):
         super().__init__(
             command_prefix=command_prefix,
             intents=intents,
-            help_command=CustomHelpCommand(),
-            options={'owner_id': os.getenv('OWNER_ID')}
+            help_command=CustomHelpCommand()
         )
+        self.owner_id = int(os.getenv('OWNER_ID'))
 
         self._logger = init_logging('powipy', log_level=logging.INFO, file_log_level=logging.WARNING)
         from ._events import get_ready

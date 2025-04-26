@@ -28,7 +28,7 @@ class Core(commands.Cog):
         data.add_field(name="discord.py", value=dpy_version)
         data.add_field(
             name=f"About {bot_name}",
-            value=f"{bot_name} is bot created by {owner.mention}.",
+            value=f"{bot_name} is a bot created by {owner.mention}.",
             inline=False
         )
         data.add_field(
