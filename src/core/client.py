@@ -14,6 +14,7 @@ class LoadedAndUnloadedCogs(TypedDict):
 
 class Client(commands.Bot):
     _last_error: str = None
+    id: int
 
     def __init__(self, command_prefix: str):
         intents = discord.Intents.all()
@@ -23,7 +24,6 @@ class Client(commands.Bot):
             intents=intents,
             help_command=CustomHelpCommand()
         )
-        self.owner_id = int(os.getenv('OWNER_ID'))
 
         self._logger = init_logging('powipy', log_level=logging.INFO, file_log_level=logging.WARNING)
         from ._events import get_ready
@@ -71,9 +71,7 @@ class Client(commands.Bot):
         }
     
     def get_invite_link(self) -> str:
-        client_id = os.getenv('CLIENT_ID')
-
-        return f"https://discord.com/api/oauth2/authorize?client_id={client_id}&permissions=0&scope=bot%20applications.commands"
+        return f"https://discord.com/api/oauth2/authorize?client_id={self.id}&permissions=0&scope=bot%20applications.commands"
     
     def get_main_guild(self) -> discord.Guild:
         return discord.Object(id=os.getenv('GUILD_ID'))

@@ -27,8 +27,15 @@ def get_ready(bot: Client):
             )
             sys.exit(1)
 
+    async def _define_infos_from_app():
+        app = await bot.application_info()
+        bot.owner_id = app.owner.id
+        bot.id = app.id
+
     async def _on_ready():
         os.system('clear') # cls for win
+
+        await _define_infos_from_app()
 
         logged_msg = f"Bot logged as [bold yellow]{bot.user}[/bold yellow]"
         separator = '-' * (len(logged_msg) - (len('[bold yellow]') + len('[/bold yellow]')))
