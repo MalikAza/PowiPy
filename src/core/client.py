@@ -74,7 +74,7 @@ class Client(commands.Bot):
         return f"https://discord.com/api/oauth2/authorize?client_id={self.id}&permissions=0&scope=bot%20applications.commands"
     
     def get_main_guild(self) -> discord.Guild:
-        return discord.Object(id=os.getenv('GUILD_ID'))
+        return self.get_guild(int(os.getenv('GUILD_ID')))
 
     async def login(self, token: str) -> None:
         self._logger.info('Connecting to Discord...')
