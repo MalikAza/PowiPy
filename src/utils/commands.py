@@ -1,5 +1,8 @@
+import os
 from typing import List
+import discord
 from discord.ext import commands
+from discord import app_commands
 
 
 def find_similar_commands(input_cmd: str, commands_list: List[commands.Command], score_limit: int = 2) -> List[commands.Command]:
@@ -25,3 +28,7 @@ def find_similar_commands(input_cmd: str, commands_list: List[commands.Command],
     similarities = [(cmd, levenshtein_distance(input_cmd, cmd.name)) for cmd in commands_list]
     similarities.sort(key=lambda x: x[1])
     return [cmd for cmd, score in similarities if score <= score_limit]
+
+def app_command_main_guild():
+    """Decorator for restricting app commands to the main guild"""
+    return app_commands.guilds(discord.Object(id=int(os.getenv('GUILD_ID'))))
