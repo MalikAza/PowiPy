@@ -179,7 +179,7 @@ class Owner(commands.Cog):
             except requests.exceptions.RequestException:
                 return await ctx.reply("Something went wrong while trying to get the image.")
         else:
-            await ctx.send_help()
+            await ctx.send_help(ctx.command)
             return
 
         try:
@@ -298,7 +298,7 @@ class Owner(commands.Cog):
             activity = discord.Streaming(url=streamer, name=stream_title)
             await ctx.bot.change_presence(status=status, activity=activity)
         elif streamer is not None:
-            await ctx.send_help()
+            await ctx.send_help(ctx.command)
             return
         else:
             await ctx.bot.change_presence(activity=None, status=status)
