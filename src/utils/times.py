@@ -17,7 +17,7 @@ TIME_RE = re.compile(
           | (?P<weeks>[\+-]?\d+)\s?(weeks?|w)
           | (?P<days>[\+-]?\d+)\s?(days?|d)
           | (?P<hours>[\+-]?\d+)\s?(hours?|hrs|hr?)
-          | (?P<minutes>[\+-]?\d+)\s?(minutes?|mins?|min)
+          | (?P<minutes>[\+-]?\d+)\s?(minutes?|mins?|min|mn)
           | (?P<seconds>[\+-]?\d+)\s?(seconds?|secs?|s)
         ))+\b
     """,
